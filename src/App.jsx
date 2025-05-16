@@ -3,12 +3,15 @@ import "./App.css";
 import Login from "./Components/Login";
 import Alerts from "./Components/Alerts/Alerts"
 import { Component } from "react";
+import Layout from "./Components/Layout"
 
 const App = () => {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
-      <Route path="/alerts" element={<Alerts />} />
+      <Route element={<Layout />}>
+        <Route path="/alerts" element={<Alerts />} />
+      </Route>
     </Routes>
   );
 };
