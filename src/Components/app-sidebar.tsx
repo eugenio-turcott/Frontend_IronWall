@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { Gauge, Home, LayoutDashboard, ArrowDownUpIcon, ChartNoAxesCombinedIcon, TriangleAlertIcon, TrendingUpDownIcon} from "lucide-react"
 
 import {
   Sidebar,
@@ -18,24 +18,34 @@ const items = [
     icon: Home,
   },
   {
-    title: "Inbox",
+    title: "Dashboard",
     url: "#",
-    icon: Inbox,
+    icon: LayoutDashboard,
   },
   {
-    title: "Calendar",
+    title: "Consumo total",
     url: "#",
-    icon: Calendar,
+    icon: Gauge,
   },
   {
-    title: "Search",
+    title: "Tendencias de crecimiento",
     url: "#",
-    icon: Search,
+    icon: TrendingUpDownIcon,
   },
   {
-    title: "Settings",
+    title: "Trafico de red",
     url: "#",
-    icon: Settings,
+    icon: ArrowDownUpIcon,
+  },
+    {
+    title: "Fallas",
+    url: "#",
+    icon: TriangleAlertIcon,
+  },
+   {
+    title: "Prediccion de crecimiento",
+    url: "#",
+    icon: ChartNoAxesCombinedIcon,
   },
 ]
 
