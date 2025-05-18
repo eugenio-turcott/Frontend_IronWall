@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Gauge,
   LayoutDashboard,
@@ -45,32 +45,32 @@ import { useAuth } from "../hooks/useAuth";
 const items_home = [
   {
     title: "Panel",
-    url: "#",
+    url: "/dashboard",
     icon: LayoutDashboard,
   },
   {
     title: "Consumo total",
-    url: "#",
+    url: "#consumo-total",
     icon: Gauge,
   },
   {
     title: "Histórico de crecimiento",
-    url: "#",
+    url: "#historico-crecimiento",
     icon: TrendingUpDownIcon,
   },
   {
     title: "Trafico de red",
-    url: "#",
+    url: "#trafico-red",
     icon: ArrowDownUpIcon,
   },
   {
     title: "Fallas",
-    url: "#",
+    url: "#fallas",
     icon: BanIcon,
   },
   {
     title: "Prediccion de crecimiento",
-    url: "#",
+    url: "#prediccion-crecimiento",
     icon: ChartNoAxesCombinedIcon,
   },
 ];
@@ -78,12 +78,12 @@ const items_home = [
 const items_avisos = [
   {
     title: "Alertas",
-    url: "#",
+    url: "/alertas",
     icon: TriangleAlertIcon,
   },
   {
     title: "Notificaciones",
-    url: "#",
+    url: "/notificaciones",
     icon: BellIcon,
   },
 ];
@@ -95,6 +95,18 @@ export function AppSidebar() {
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
+  };
+
+  useEffect(() => {
+    const savedItem = sessionStorage.getItem("activeSidebarItem");
+    if (savedItem) {
+      handleItemClick(savedItem);
+    }
+  }, []);
+
+  const handleItemClick = (title: string) => {
+    setActiveItem(title);
+    sessionStorage.setItem("activeSidebarItem", title);
   };
 
   return (
@@ -137,7 +149,7 @@ export function AppSidebar() {
                       <SidebarMenuButton asChild>
                         <a
                           href={item.url}
-                          onClick={() => setActiveItem(item.title)}
+                          onClick={() => handleItemClick(item.title)}
                           className={`flex items-center ${
                             isCollapsed ? "justify-center p-6" : "p-2"
                           } ${
@@ -181,7 +193,7 @@ export function AppSidebar() {
                       <SidebarMenuButton asChild>
                         <a
                           href={item.url}
-                          onClick={() => setActiveItem(item.title)}
+                          onClick={() => handleItemClick(item.title)}
                           className={`flex items-center ${
                             isCollapsed ? "justify-center p-6" : "p-2"
                           } ${

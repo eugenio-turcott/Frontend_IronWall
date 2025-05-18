@@ -73,7 +73,7 @@ function Login() {
       sessionStorage.setItem("authToken", data.access_token);
       sessionStorage.setItem("userData", JSON.stringify(data.user));
 
-      window.location.href = "/alerts";
+      window.location.href = "/dashboard";
     } catch (error) {
       console.error("Error de login:", error);
       setLoginError(
