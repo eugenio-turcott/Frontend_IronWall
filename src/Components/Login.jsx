@@ -69,8 +69,10 @@ function Login() {
       const data = await response.json();
       console.log("Login exitoso:", data);
 
-      // Guarda datos o redirige
-      // localStorage.setItem("token", data.access_token);
+      // Guardar datos del usuario en sessionStorage
+      sessionStorage.setItem("authToken", data.access_token);
+      sessionStorage.setItem("userData", JSON.stringify(data.user));
+
       window.location.href = "/alerts";
     } catch (error) {
       console.error("Error de login:", error);
