@@ -1,7 +1,5 @@
-"use client"
-
-import { TrendingUp } from "lucide-react"
-import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts"
+import { Download, TrendingUp } from "lucide-react";
+import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 
 import {
   Card,
@@ -10,45 +8,60 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
-const chartData = [{ month: "january", desktop: 1260, mobile: 570 }]
+} from "@/components/ui/chart";
+import { Button } from "@/components/ui/button";
 
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "hsl(var(--chart-1))",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "hsl(var(--chart-2))",
-  },
-} satisfies ChartConfig
+interface RadialChartProps {
+  title: string;
+  description: string;
+  data: {
+    month: string;
+    desktop: number;
+    mobile: number;
+  };
+  trend?: string;
+  note?: string;
+}
 
-function RadialChart() {
-  const totalVisitors = chartData[0].desktop + chartData[0].mobile
+export default function RadialChart({
+  title,
+  description,
+  data,
+  trend = "Trending up by 5.2% this month",
+  note = "Showing total visitors for the last 6 months",
+}: RadialChartProps) {
+  const totalVisitors = data.desktop + data.mobile;
+
+  const chartConfig = {
+    desktop: {
+      label: "Desktop",
+      color: "hsl(var(--chart-1))",
+    },
+    mobile: {
+      label: "Mobile",
+      color: "hsl(var(--chart-2))",
+    },
+  };
 
   return (
-    <Card className="flex flex-col">
-      <CardHeader className="items-center pb-0">
-        <CardTitle>Radial Chart - Stacked</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+    <Card className="w-[180px]">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">{title}</CardTitle>
+        <CardDescription className="text-xs">{description}</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-1 items-center pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square w-full max-w-[250px]"
-        >
+      <CardContent className="flex justify-center items-center p-0">
+        <ChartContainer config={chartConfig} className="mx-auto w-full max-w-[150px] aspect-square">
           <RadialBarChart
-            data={chartData}
+            data={[data]}
             endAngle={180}
-            innerRadius={80}
-            outerRadius={130}
+            innerRadius={50}
+            outerRadius={70}
           >
             <ChartTooltip
               cursor={false}
@@ -62,20 +75,20 @@ function RadialChart() {
                       <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
                         <tspan
                           x={viewBox.cx}
-                          y={(viewBox.cy || 0) - 16}
-                          className="fill-foreground text-2xl font-bold"
+                          y={(viewBox.cy || 0) - 10}
+                          className="fill-foreground text-base font-bold"
                         >
                           {totalVisitors.toLocaleString()}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 4}
-                          className="fill-muted-foreground"
+                          y={(viewBox.cy || 0) + 10}
+                          className="fill-muted-foreground text-xs"
                         >
                           Visitors
                         </tspan>
                       </text>
-                    )
+                    );
                   }
                 }}
               />
@@ -97,16 +110,12 @@ function RadialChart() {
           </RadialBarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
+      <CardFooter className="p-2 pt-0 flex justify-center">
+        <Button variant="ghost" size="sm" className="w-full text-xs gap-1">
+          <Download className="w-3 h-3" />
+          Descargar Reporte
+        </Button>
       </CardFooter>
     </Card>
-  )
+  );
 }
-
-export default RadialChart;

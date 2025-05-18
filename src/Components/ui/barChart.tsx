@@ -1,7 +1,7 @@
 "use client";
 
 import { Download } from "lucide-react";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import {
   Card,
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
 
-interface AreaChartProps {
+interface BarChartCardProps {
   title: string;
   description: string;
   data: {
@@ -35,11 +35,11 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function AreaChartCard({
+export default function BarChartCard({
   title,
   description,
   data,
-}: AreaChartProps) {
+}: BarChartCardProps) {
   return (
     <Card className="w-[180px]">
       <CardHeader className="pb-2 px-2">
@@ -51,31 +51,22 @@ export default function AreaChartCard({
           config={chartConfig}
           className="mx-auto w-full max-w-[150px] aspect-[2/1]"
         >
-          <AreaChart
-            data={data}
-            margin={{ left: 0, right: 0, top: 10, bottom: 0 }}
-          >
-            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+          <BarChart data={data}>
+            <CartesianGrid vertical={false} />
             <XAxis
               dataKey="month"
               tickLine={false}
-              axisLine={false}
               tickMargin={4}
-              tickFormatter={(val) => val.slice(0, 3)}
+              axisLine={false}
+              tickFormatter={(value) => value.slice(0, 3)}
               fontSize={10}
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
+              content={<ChartTooltipContent hideLabel />}
             />
-            <Area
-              dataKey="desktop"
-              type="monotone"
-              stroke="var(--color-desktop)"
-              fill="var(--color-desktop)"
-              fillOpacity={0.25}
-            />
-          </AreaChart>
+            <Bar dataKey="desktop" fill="var(--color-desktop)" radius={8} />
+          </BarChart>
         </ChartContainer>
       </CardContent>
       <CardFooter className="p-2 pt-0">
