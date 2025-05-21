@@ -120,7 +120,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className={`fixed ${isCollapsed ? "w-[4.5rem]" : "w-64"}`}>
+    <Sidebar className={`${isCollapsed ? "w-[4.5rem]" : "w-64"}`}>
       <Button
         onClick={toggleSidebar}
         variant="ghost"
