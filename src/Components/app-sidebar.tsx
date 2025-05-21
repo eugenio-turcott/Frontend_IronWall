@@ -56,7 +56,7 @@ const items_home = [
   {
     title: "Histórico de crecimiento",
     url: "#historico-crecimiento",
-    icon: TrendingUpDownIcon,
+    icon: ChartNoAxesCombinedIcon,
   },
   {
     title: "Trafico de red",
@@ -71,7 +71,7 @@ const items_home = [
   {
     title: "Prediccion de crecimiento",
     url: "#prediccion-crecimiento",
-    icon: ChartNoAxesCombinedIcon,
+    icon: TrendingUpDownIcon,
   },
 ];
 
@@ -89,12 +89,22 @@ const items_avisos = [
 ];
 
 export function AppSidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    // Leer del sessionStorage al inicializar
+    const saved = sessionStorage.getItem("isSidebarCollapsed");
+    return saved === "true";
+  });
   const [activeItem, setActiveItem] = useState("");
   const { user } = useAuth();
 
   const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    // Guardar en sessionStorage y también en cookie para consistencia
+    sessionStorage.setItem("isSidebarCollapsed", String(newState));
+    document.cookie = `sidebar_state=${newState}; path=/; max-age=${
+      60 * 60 * 24 * 7
+    }`;
   };
 
   useEffect(() => {
@@ -110,7 +120,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className={`relative ${isCollapsed ? "w-[4.5rem]" : "w-64"}`}>
+    <Sidebar className={`fixed ${isCollapsed ? "w-[4.5rem]" : "w-64"}`}>
       <Button
         onClick={toggleSidebar}
         variant="ghost"
