@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import "./App.css";
 import Login from "./Components/Login";
 import Alerts from "./Components/Alerts/Alerts";
-import Dashboard from "./Components/Dashboards/dashboard";
+import Dashboard from "./Components/Dashboards/Dashboard";
 import Layout from "./Components/Layout";
 
 const App = () => {

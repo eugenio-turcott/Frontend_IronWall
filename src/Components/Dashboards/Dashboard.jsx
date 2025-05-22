@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, PureComponent } from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,12 +22,74 @@ import { BarChart, Bar, Rectangle } from "recharts";
 import { LineChart, Line, ReferenceLine } from "recharts";
 import FocusGraph from "./FocusGraph";
 
+const RADIAN = Math.PI / 180;
 const data = [
-  { name: "Energía", value: 400 },
-  { name: "Agua", value: 300 },
-  { name: "Gas", value: 200 },
-  { name: "Otros", value: 100 },
+  { name: "A", value: 80, color: "#ff0000" },
+  { name: "B", value: 45, color: "#00ff00" },
+  { name: "C", value: 25, color: "#0000ff" },
 ];
+const cx = 70;
+const cy = 57.5;
+const iR = 30;
+const oR = 45;
+
+const value = 50;
+
+const needle = (value, data, cx, cy, iR, oR, color) => {
+  let total = 0;
+  data.forEach((v) => {
+    total += v.value;
+  });
+  const ang = 180.0 * (1 - value / total);
+  const length = (iR + 2 * oR) / 3;
+  const sin = Math.sin(-RADIAN * ang);
+  const cos = Math.cos(-RADIAN * ang);
+  const r = 5;
+  const x0 = cx + 5;
+  const y0 = cy + 5;
+  const xba = x0 + r * sin;
+  const yba = y0 - r * cos;
+  const xbb = x0 - r * sin;
+  const ybb = y0 + r * cos;
+  const xp = x0 + length * cos;
+  const yp = y0 + length * sin;
+
+  return [
+    <circle cx={x0} cy={y0} r={r} fill={color} stroke="none" />,
+    <path
+      d={`M${xba} ${yba}L${xbb} ${ybb} L${xp} ${yp} L${xba} ${yba}`}
+      stroke="#none"
+      fill={color}
+    />,
+  ];
+};
+
+export class PieChartWithNeedle extends PureComponent {
+  render() {
+    return (
+      <PieChart width={140} height={80}>
+        <Pie
+          dataKey="value"
+          startAngle={180}
+          endAngle={0}
+          data={data}
+          cx={cx}
+          cy={cy}
+          innerRadius={iR}
+          outerRadius={oR}
+          fill="#8884d8"
+          stroke="none"
+          className="cursor-pointer"
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.color} />
+          ))}
+        </Pie>
+        {needle(value, data, cx, cy, iR, oR, "#d0d000")}
+      </PieChart>
+    );
+  }
+}
 
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7f50"];
 
@@ -42,94 +104,94 @@ const data2 = [
 
 const data3 = [
   {
-    subject: "Math",
-    A: 120,
-    B: 110,
-    fullMark: 150,
+    subject: "1",
+    A: 90,
+    B: 80,
+    fullMark: 100,
   },
   {
-    subject: "Chinese",
-    A: 98,
-    B: 130,
-    fullMark: 150,
-  },
-  {
-    subject: "English",
-    A: 86,
-    B: 130,
-    fullMark: 150,
-  },
-  {
-    subject: "Geography",
-    A: 99,
-    B: 100,
-    fullMark: 150,
-  },
-  {
-    subject: "Physics",
-    A: 85,
+    subject: "2",
+    A: 78,
     B: 90,
-    fullMark: 150,
+    fullMark: 100,
   },
   {
-    subject: "History",
+    subject: "3",
+    A: 46,
+    B: 70,
+    fullMark: 100,
+  },
+  {
+    subject: "4",
+    A: 60,
+    B: 90,
+    fullMark: 100,
+  },
+  {
+    subject: "5",
+    A: 35,
+    B: 65,
+    fullMark: 100,
+  },
+  {
+    subject: "6",
     A: 65,
     B: 85,
-    fullMark: 150,
+    fullMark: 100,
   },
 ];
 
 const data4 = [
   {
-    name: "Page A",
-    uv: 4000,
+    name: "A",
+    uv: 900,
   },
   {
-    name: "Page B",
-    uv: 3000,
+    name: "B",
+    uv: 600,
   },
   {
-    name: "Page C",
-    uv: 2000,
+    name: "C",
+    uv: 200,
   },
   {
-    name: "Page D",
-    uv: 2780,
+    name: "D",
+    uv: 780,
   },
   {
-    name: "Page E",
-    uv: 1890,
+    name: "E",
+    uv: 490,
   },
 ];
 
 const data5 = [
   {
-    name: "Page A",
-    pv: 2400,
+    name: "A",
+    pv: 240,
   },
   {
-    name: "Page B",
-    pv: 1398,
+    name: "B",
+    pv: 150,
   },
   {
-    name: "Page C",
-    pv: 9800,
+    name: "C",
+    pv: 600,
   },
   {
-    name: "Page D",
-    pv: 3908,
+    name: "D",
+    pv: 400,
   },
   {
-    name: "Page E",
-    pv: 4800,
+    name: "E",
+    pv: 200,
   },
   {
-    name: "Page F",
-    pv: 3800,
+    name: "F",
+    pv: 380,
   },
   {
-    name: "Page G",
-    pv: 4300,
+    name: "G",
+    pv: 140,
   },
 ];
 
@@ -142,15 +204,29 @@ export default function Dashboard() {
     if (savedState !== null) {
       setIsCollapsed(JSON.parse(savedState));
     }
+
+    // Leer el hash de la URL al cargar
+    const hash = window.location.hash.substring(1);
+    if (hash && chartComponents[hash]) {
+      setSelectedGraph(hash);
+    }
   }, []);
 
   useEffect(() => {
     sessionStorage.setItem("isSidebarCollapsed", JSON.stringify(isCollapsed));
   }, [isCollapsed]);
 
+  const handleGraphClick = (graphId) => {
+    setSelectedGraph(graphId);
+    // Actualizar la URL con el hash
+    window.location.hash = graphId;
+    // También guardar en sessionStorage para que la sidebar lo detecte
+    sessionStorage.setItem("activeSidebarItem", graphId);
+  };
+
   // Mapeo de componentes de gráficas
   const chartComponents = {
-    consumo: (
+    consumo_total: (
       <ResponsiveContainer>
         <PieChart>
           <Pie
@@ -173,7 +249,7 @@ export default function Dashboard() {
         </PieChart>
       </ResponsiveContainer>
     ),
-    historico: (
+    historico_crecimiento: (
       <ResponsiveContainer>
         <AreaChart
           data={data2}
@@ -199,7 +275,7 @@ export default function Dashboard() {
         </AreaChart>
       </ResponsiveContainer>
     ),
-    trafico: (
+    trafico_red: (
       <ResponsiveContainer>
         <RadarChart cx="50%" cy="50%" outerRadius="50%" data={data3}>
           <PolarGrid />
@@ -233,7 +309,7 @@ export default function Dashboard() {
         </BarChart>
       </ResponsiveContainer>
     ),
-    prediccion: (
+    prediccion_crecimiento: (
       <ResponsiveContainer>
         <LineChart
           data={data5}
@@ -243,7 +319,7 @@ export default function Dashboard() {
           <XAxis dataKey="name" />
           <YAxis />
           <Tooltip />
-          <ReferenceLine x="Page C" stroke="red" label="May 2025" />
+          <ReferenceLine x="C" stroke="red" label="May 2025" />
           <Line type="monotone" dataKey="pv" stroke="#8884d8" />
         </LineChart>
       </ResponsiveContainer>
@@ -251,48 +327,32 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-full w-full justify-center overflow-hidden">
+    <div className="flex h-full w-full justify-center">
       <div className="flex flex-col w-full max-w-[1700px]">
-        <div className="flex flex-row flex-wrap justify-center gap-6 mt-4">
+        <div className="flex flex-row justify-around gap-6 mt-4 px-3 py-1">
           <div
             className={cn(
-              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[295px] h-[305px] cursor-pointer"
+              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[200px] h-[200px] cursor-pointer"
             )}
-            onClick={() => setSelectedGraph("consumo")}
           >
             <div className="px-2">
               <div className="mb-4 -mt-2 text-center">
                 <h1 className="text-l font-bold">Consumo Total</h1>
-                <p className="text-gray-500">Mayo 2025</p>
+                <p className="text-xs text-gray-500">Mayo 2025</p>
               </div>
-              <div className="z-10 h-[180px]">
+              <div
+                className="z-10 h-[80px]"
+                onClick={() => handleGraphClick("consumo_total")}
+              >
                 <div className="z-10 flex justify-center">
-                  <PieChart width={175} height={175}>
-                    <Pie
-                      data={data}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      paddingAngle={15}
-                      dataKey="value"
-                    >
-                      {data.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                  </PieChart>
+                  <PieChartWithNeedle />
                 </div>
               </div>
               <div className="z-20 mt-2">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full text-xs gap-1"
+                  className="w-full text-xs gap-1 cursor-pointer"
                 >
                   <Download className="w-3 h-3" />
                   Descargar Reporte
@@ -302,18 +362,20 @@ export default function Dashboard() {
           </div>
           <div
             className={cn(
-              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[295px] h-[305px] cursor-pointer"
+              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[270px] h-[200px] cursor-pointer"
             )}
-            onClick={() => setSelectedGraph("historico")}
           >
             <div className="px-5">
               <div className="mb-4 -mt-2 text-center">
                 <h1 className="text-l font-bold">Histórico de Crecimiento</h1>
-                <p className="text-gray-500">Mayo 2025</p>
+                <p className="text-xs text-gray-500">Mayo 2025</p>
               </div>
-              <div className="z-10 h-[180px]">
+              <div
+                className="z-10 h-[80px]"
+                onClick={() => handleGraphClick("historico_crecimiento")}
+              >
                 <div className="z-10 flex justify-center">
-                  <ResponsiveContainer width="100%" height={175}>
+                  <ResponsiveContainer width="100%" height={80}>
                     <AreaChart
                       data={data2}
                       margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
@@ -348,6 +410,7 @@ export default function Dashboard() {
                         stroke="#4f46e5"
                         fillOpacity={1}
                         fill="url(#colorGrowth)"
+                        className="cursor-pointer"
                       />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -357,7 +420,7 @@ export default function Dashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full text-xs gap-1"
+                  className="w-full text-xs gap-1 cursor-pointer"
                 >
                   <Download className="w-3 h-3" />
                   Descargar Reporte
@@ -367,19 +430,26 @@ export default function Dashboard() {
           </div>
           <div
             className={cn(
-              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[295px] h-[305px] cursor-pointer"
+              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[200px] h-[200px] cursor-pointer"
             )}
-            onClick={() => setSelectedGraph("trafico")}
           >
             <div className="px-5">
               <div className="mb-4 -mt-2 text-center">
                 <h1 className="text-l font-bold">Tráfico de red</h1>
-                <p className="text-gray-500">Mayo 2025</p>
+                <p className="text-xs text-gray-500">Mayo 2025</p>
               </div>
-              <div className="z-10 h-[180px]">
+              <div
+                className="z-10 h-[80px]"
+                onClick={() => handleGraphClick("trafico_red")}
+              >
                 <div className="z-10 flex justify-center">
-                  <ResponsiveContainer width="100%" height={175}>
-                    <RadarChart cx="50%" cy="50%" outerRadius="50%" data={data3}>
+                  <ResponsiveContainer width="100%" height={80}>
+                    <RadarChart
+                      cx="50%"
+                      cy="50%"
+                      outerRadius="60%"
+                      data={data3}
+                    >
                       <PolarGrid />
                       <PolarAngleAxis dataKey="subject" />
                       <PolarRadiusAxis />
@@ -389,6 +459,7 @@ export default function Dashboard() {
                         stroke="#8884d8"
                         fill="#8884d8"
                         fillOpacity={0.6}
+                        className="cursor-pointer"
                       />
                     </RadarChart>
                   </ResponsiveContainer>
@@ -398,7 +469,7 @@ export default function Dashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full text-xs gap-1"
+                  className="w-full text-xs gap-1 cursor-pointer"
                 >
                   <Download className="w-3 h-3" />
                   Descargar Reporte
@@ -408,18 +479,20 @@ export default function Dashboard() {
           </div>
           <div
             className={cn(
-              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[295px] h-[305px] cursor-pointer"
+              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[200px] h-[200px] cursor-pointer"
             )}
-            onClick={() => setSelectedGraph("fallas")}
           >
             <div className="px-5">
               <div className="mb-4 -mt-2 text-center">
                 <h1 className="text-l font-bold">Top 5 Fallas</h1>
-                <p className="text-gray-500">Mayo 2025</p>
+                <p className="text-xs text-gray-500">Mayo 2025</p>
               </div>
-              <div className="z-10 h-[180px]">
+              <div
+                className="z-10 h-[80px]"
+                onClick={() => handleGraphClick("fallas")}
+              >
                 <div className="z-10 flex justify-center">
-                  <ResponsiveContainer width="100%" height={175}>
+                  <ResponsiveContainer width="100%" height={80}>
                     <BarChart
                       width={500}
                       height={300}
@@ -434,6 +507,7 @@ export default function Dashboard() {
                         dataKey="uv"
                         fill="#82ca9d"
                         activeBar={<Rectangle fill="gold" stroke="purple" />}
+                        className="cursor-pointer"
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -443,7 +517,7 @@ export default function Dashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full text-xs gap-1"
+                  className="w-full text-xs gap-1 cursor-pointer"
                 >
                   <Download className="w-3 h-3" />
                   Descargar Reporte
@@ -453,18 +527,20 @@ export default function Dashboard() {
           </div>
           <div
             className={cn(
-              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[295px] h-[305px] cursor-pointer"
+              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[270px] h-[200px] cursor-pointer"
             )}
-            onClick={() => setSelectedGraph("prediccion")}
           >
             <div className="px-5">
               <div className="mb-4 -mt-2 text-center">
                 <h1 className="text-l font-bold">Predicción de Crecimiento</h1>
-                <p className="text-gray-500">Mayo 2025</p>
+                <p className="text-xs text-gray-500">Mayo 2025</p>
               </div>
-              <div className="z-10">
+              <div
+                className="z-10 h-[80px]"
+                onClick={() => handleGraphClick("prediccion_crecimiento")}
+              >
                 <div className="z-10 flex justify-center">
-                  <ResponsiveContainer width="100%" height={175}>
+                  <ResponsiveContainer width="100%" height={80}>
                     <LineChart
                       width={500}
                       height={300}
@@ -475,7 +551,7 @@ export default function Dashboard() {
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
-                      <ReferenceLine x="Page C" stroke="red" label="May 2025" />
+                      <ReferenceLine x="C" stroke="red" label="May 2025" />
                       <Line type="monotone" dataKey="pv" stroke="#8884d8" />
                     </LineChart>
                   </ResponsiveContainer>
@@ -485,7 +561,7 @@ export default function Dashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full text-xs gap-1"
+                  className="w-full text-xs gap-1 cursor-pointer"
                 >
                   <Download className="w-3 h-3" />
                   Descargar Reporte
@@ -494,7 +570,15 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-        <FocusGraph selectedGraph={selectedGraph} chartComponents={chartComponents} />
+        <FocusGraph
+          selectedGraph={selectedGraph}
+          chartComponents={chartComponents}
+          onClose={() => {
+            setSelectedGraph(null);
+            window.location.hash = "";
+            sessionStorage.setItem("activeSidebarItem", "Panel");
+          }}
+        />
       </div>
     </div>
   );

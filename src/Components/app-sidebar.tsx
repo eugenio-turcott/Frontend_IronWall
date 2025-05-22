@@ -50,17 +50,17 @@ const items_home = [
   },
   {
     title: "Consumo total",
-    url: "#consumo-total",
+    url: "#consumo_total",
     icon: Gauge,
   },
   {
     title: "Histórico de crecimiento",
-    url: "#historico-crecimiento",
+    url: "#historico_crecimiento",
     icon: ChartNoAxesCombinedIcon,
   },
   {
     title: "Trafico de red",
-    url: "#trafico-red",
+    url: "#trafico_red",
     icon: ArrowDownUpIcon,
   },
   {
@@ -70,7 +70,7 @@ const items_home = [
   },
   {
     title: "Prediccion de crecimiento",
-    url: "#prediccion-crecimiento",
+    url: "#prediccion_crecimiento",
     icon: TrendingUpDownIcon,
   },
 ];
@@ -94,8 +94,48 @@ export function AppSidebar() {
     const saved = sessionStorage.getItem("isSidebarCollapsed");
     return saved === "true";
   });
-  const [activeItem, setActiveItem] = useState("");
+  const [activeItem, setActiveItem] = useState("Panel");
   const { user } = useAuth();
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1);
+      if (hash) {
+        // Buscar si el hash coincide con algún ítem del menú
+        const matchingItem = [...items_home, ...items_avisos].find(
+          (item) => item.url === `#${hash}`
+        );
+        if (matchingItem) {
+          setActiveItem(matchingItem.title);
+          sessionStorage.setItem("activeSidebarItem", matchingItem.title);
+        }
+      } else {
+        // Si no hay hash, seleccionar "Panel"
+        setActiveItem("Panel");
+        sessionStorage.setItem("activeSidebarItem", "Panel");
+      }
+    };
+
+    // Escuchar cambios en el hash
+    window.addEventListener("hashchange", handleHashChange);
+
+    // Verificar el hash inicial al montar el componente
+    handleHashChange();
+
+    // También escuchar cambios en el sessionStorage (por si otro componente lo modifica)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "activeSidebarItem") {
+        setActiveItem(e.newValue || "Panel");
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   const toggleSidebar = () => {
     const newState = !isCollapsed;
