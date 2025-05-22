@@ -209,19 +209,59 @@ export default function Dashboard() {
     const hash = window.location.hash.substring(1);
     if (hash && chartComponents[hash]) {
       setSelectedGraph(hash);
+      sessionStorage.setItem("activeSidebarItem", getTitleFromGraphId(hash));
     }
   }, []);
+
+  const getTitleFromGraphId = (graphId) => {
+    switch (graphId) {
+      case "consumo_total":
+        return "Consumo total";
+      case "historico_crecimiento":
+        return "Histórico de crecimiento";
+      case "trafico_red":
+        return "Trafico de red";
+      case "fallas":
+        return "Fallas";
+      case "prediccion_crecimiento":
+        return "Prediccion de crecimiento";
+      default:
+        return "Panel";
+    }
+  };
 
   useEffect(() => {
     sessionStorage.setItem("isSidebarCollapsed", JSON.stringify(isCollapsed));
   }, [isCollapsed]);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1);
+      if (hash && chartComponents[hash]) {
+        setSelectedGraph(hash);
+        sessionStorage.setItem("activeSidebarItem", getTitleFromGraphId(hash));
+      }
+    };
+
+    // Escuchar tanto el evento popstate como nuestro evento personalizado
+    window.addEventListener("popstate", handleHashChange);
+    window.addEventListener("hashChanged", handleHashChange);
+
+    // Ejecutar al montar
+    handleHashChange();
+
+    return () => {
+      window.removeEventListener("popstate", handleHashChange);
+      window.removeEventListener("hashChanged", handleHashChange);
+    };
+  }, []);
 
   const handleGraphClick = (graphId) => {
     setSelectedGraph(graphId);
     // Actualizar la URL con el hash
     window.location.hash = graphId;
     // También guardar en sessionStorage para que la sidebar lo detecte
-    sessionStorage.setItem("activeSidebarItem", graphId);
+    sessionStorage.setItem("activeSidebarItem", getTitleFromGraphId(graphId));
   };
 
   // Mapeo de componentes de gráficas
@@ -447,12 +487,10 @@ export default function Dashboard() {
                     <RadarChart
                       cx="50%"
                       cy="50%"
-                      outerRadius="60%"
+                      outerRadius="100%"
                       data={data3}
                     >
                       <PolarGrid />
-                      <PolarAngleAxis dataKey="subject" />
-                      <PolarRadiusAxis />
                       <Radar
                         name="Mike"
                         dataKey="A"

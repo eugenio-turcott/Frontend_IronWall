@@ -98,44 +98,45 @@ export function AppSidebar() {
   const { user } = useAuth();
 
   useEffect(() => {
-    const handleHashChange = () => {
+    const handleLocationChange = () => {
+      const path = window.location.pathname;
       const hash = window.location.hash.substring(1);
-      if (hash) {
-        // Buscar si el hash coincide con algún ítem del menú
-        const matchingItem = [...items_home, ...items_avisos].find(
-          (item) => item.url === `#${hash}`
-        );
-        if (matchingItem) {
+      const currentActive = activeItem;
+
+      // Primero verificar las rutas normales (/alertas, /notificaciones)
+      if (path === "/alertas" || path === "/notificaciones") {
+        const matchingItem = items_avisos.find((item) => item.url === path);
+        if (matchingItem && currentActive !== matchingItem.title) {
           setActiveItem(matchingItem.title);
           sessionStorage.setItem("activeSidebarItem", matchingItem.title);
         }
-      } else {
-        // Si no hay hash, seleccionar "Panel"
+        return;
+      }
+
+      // Luego verificar los hashes para las gráficas
+      if (hash) {
+        const matchingItem = items_home.find((item) => item.url === `#${hash}`);
+        if (matchingItem && currentActive !== matchingItem.title) {
+          setActiveItem(matchingItem.title);
+          sessionStorage.setItem("activeSidebarItem", matchingItem.title);
+        }
+        return;
+      }
+
+      // Ruta por defecto (/dashboard)
+      if (path === "/dashboard" && currentActive !== "Panel") {
         setActiveItem("Panel");
         sessionStorage.setItem("activeSidebarItem", "Panel");
       }
     };
 
-    // Escuchar cambios en el hash
-    window.addEventListener("hashchange", handleHashChange);
-
-    // Verificar el hash inicial al montar el componente
-    handleHashChange();
-
-    // También escuchar cambios en el sessionStorage (por si otro componente lo modifica)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "activeSidebarItem") {
-        setActiveItem(e.newValue || "Panel");
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("popstate", handleLocationChange);
+    handleLocationChange(); // Ejecutar inmediatamente
 
     return () => {
-      window.removeEventListener("hashchange", handleHashChange);
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("popstate", handleLocationChange);
     };
-  }, []);
+  }, [activeItem]);
 
   const toggleSidebar = () => {
     const newState = !isCollapsed;
@@ -150,13 +151,52 @@ export function AppSidebar() {
   useEffect(() => {
     const savedItem = sessionStorage.getItem("activeSidebarItem");
     if (savedItem) {
-      handleItemClick(savedItem);
+      const allItems = [...items_home, ...items_avisos];
+      const foundItem = allItems.find((item) => item.title === savedItem);
+      if (foundItem) {
+        handleItemClick(foundItem.title, foundItem.url, true);
+      }
     }
   }, []);
 
-  const handleItemClick = (title: string) => {
-    setActiveItem(title);
-    sessionStorage.setItem("activeSidebarItem", title);
+  const handleItemClick = (
+    title: string,
+    url?: string,
+    skipNavigation = false
+  ) => {
+    if (activeItem !== title) {
+      setActiveItem(title);
+      sessionStorage.setItem("activeSidebarItem", title);
+    }
+
+    if (!skipNavigation && url) {
+      const currentPath = window.location.pathname;
+      const isAlertRoute =
+        currentPath === "/alertas" || currentPath === "/notificaciones";
+      const isDashboardGraph = url.startsWith("#");
+
+      if (isDashboardGraph) {
+        // Para gráficas del dashboard (usando hash)
+        if (currentPath !== "/dashboard") {
+          // Si no estamos en dashboard, redirigimos primero
+          window.location.href = `/dashboard${url}`;
+        } else {
+          // Si ya estamos en dashboard, solo actualizamos el hash SIN recargar
+          window.history.pushState(null, "", url);
+
+          // Disparamos evento personalizado para que Dashboard.jsx lo detecte
+          window.dispatchEvent(new Event("hashChanged"));
+        }
+      } else {
+        // Para rutas normales (/alertas, /notificaciones)
+        if (
+          window.location.pathname !==
+          new URL(url, window.location.origin).pathname
+        ) {
+          window.location.href = url;
+        }
+      }
+    }
   };
 
   return (
@@ -199,7 +239,10 @@ export function AppSidebar() {
                       <SidebarMenuButton asChild>
                         <a
                           href={item.url}
-                          onClick={() => handleItemClick(item.title)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleItemClick(item.title, item.url);
+                          }}
                           className={`flex items-center ${
                             isCollapsed ? "justify-center p-6" : "p-2"
                           } ${
