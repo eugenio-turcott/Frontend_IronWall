@@ -72,6 +72,8 @@ function Login() {
       // Guardar datos del usuario en sessionStorage
       sessionStorage.setItem("authToken", data.access_token);
       sessionStorage.setItem("userData", JSON.stringify(data.user));
+      console.log("userData", data.user);
+      sessionStorage.setItem("userType", data.user.role);
 
       window.location.href = "/dashboard";
     } catch (error) {

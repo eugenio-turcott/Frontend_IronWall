@@ -7,6 +7,7 @@ export default function AlertComponent({
   recovered,
   device,
   last_ok,
+  completado,
 }) {
   // Función para formatear el timestamp de last_ok
   const formatDate = (timestamp) => {
@@ -19,7 +20,11 @@ export default function AlertComponent({
   };
 
   return (
-    <div className="flex items-center bg-white rounded-lg shadow border px-4 py-3 w-full min-h-[70px]">
+    <div
+      className={`flex items-center rounded-lg shadow border px-4 py-3 w-full min-h-[70px] ${
+        completado === "SI" ? "bg-green-100 border-green-400" : "bg-white"
+      }`}
+    >
       {/* Icono de alerta */}
       <div className="flex items-center justify-center mr-4">
         <span
@@ -60,7 +65,7 @@ export default function AlertComponent({
               : "text-blue-500"
           }`}
         >
-          {severity?.toUpperCase() || "UNKNOWN"}
+          {severity?.toUpperCase() || "DESCONOCIDO"}
         </span>
         <span className="text-xs text-gray-400 mt-1">
           {status === "OK" ? "Resuelto" : "Activo"}
