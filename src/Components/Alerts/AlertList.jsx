@@ -1,6 +1,18 @@
 import React, { useState, useEffect, useMemo } from "react";
 import AlertComponent from "./AlertComponent";
-import { Download } from "lucide-react";
+import {
+  Download,
+  CircleAlert,
+  ListFilter,
+  FileWarning,
+  MessageCircleWarning,
+  Siren,
+  MapPinned,
+  CircleSlash,
+  ChartNetwork,
+  ReceiptText,
+  LocateFixed,
+} from "lucide-react";
 
 const severities = [
   { value: "crit", label: "CRITICAL" },
@@ -258,7 +270,10 @@ export default function AlertList() {
         <div className="flex flex-row gap-8 h-full min-h-0 p-8">
           {/* Columna izquierda: lista de alertas */}
           <div className="flex-1 min-w-[260px] max-w-[320px] flex flex-col">
-            <h1 className="text-2xl font-bold mb-2">Alertas</h1>
+            <div className="flex items-center">
+              <CircleAlert className="w-8 h-8" />
+              <h1 className="text-2xl font-bold mb-2 ml-2">Alertas</h1>
+            </div>
             <div className="text-xs text-gray-400 mb-2">{updatedText}</div>
             <div className="overflow-y-scroll flex-1 flex flex-col gap-3 pr-1 min-h-0">
               {filteredAlerts.map((item) => (
@@ -286,10 +301,16 @@ export default function AlertList() {
           </div>
           {/* Columna central: filtros */}
           <div className="flex flex-col min-w-[220px] max-w-[260px] bg-[#f5f6fa] rounded-lg p-4 border mx-2 self-start">
-            <h2 className="text-xl font-bold mb-2">Filtros</h2>
+            <div className="flex items-center">
+              <ListFilter className="w-8 h-8" />
+              <h2 className="text-xl font-bold mb-2 ml-2">Filtros</h2>
+            </div>
             <hr className="mb-3" />
             <div className="flex flex-col gap-2">
-              <span className="font-medium text-sm">Tipo de alerta</span>
+              <div>
+                <FileWarning className="w-4 h-4 inline-block mr-1" />
+                <span className="font-medium text-sm">Tipo de alerta</span>
+              </div>
               {tipos.map((t) => (
                 <button
                   key={t}
@@ -308,7 +329,10 @@ export default function AlertList() {
                   {t}
                 </button>
               ))}
-              <span className="font-medium text-sm mt-2">Severidad</span>
+              <div>
+                <MessageCircleWarning className="w-4 h-4 inline-block mr-1" />
+                <span className="font-medium text-sm mt-2">Severidad</span>
+              </div>
               {severities.map((s) => (
                 <button
                   key={s.value}
@@ -327,7 +351,10 @@ export default function AlertList() {
                   {s.label}
                 </button>
               ))}
-              <span className="font-medium text-sm mt-2">Estado</span>
+              <div>
+                <Siren className="w-4 h-4 inline-block mr-1" />
+                <span className="font-medium text-sm mt-2">Estado</span>
+              </div>
               {["Activo", "Resuelto"].map((e) => (
                 <button
                   key={e}
@@ -346,7 +373,10 @@ export default function AlertList() {
                   {e}
                 </button>
               ))}
-              <span className="font-medium text-sm mt-2">Región</span>
+              <div>
+                <MapPinned className="w-4 h-4 inline-block mr-1" />
+                <span className="font-medium text-sm mt-2">Región</span>
+              </div>
               {regiones.map((r) => (
                 <button
                   key={r}
@@ -376,14 +406,23 @@ export default function AlertList() {
           {selectedAlert && (
             <div className="min-w-[320px] max-w-[400px] bg-[#f5f6fa] rounded-lg p-6 border flex flex-col self-start">
               <div className="flex gap-4 mb-2 justify-between">
-                <span className="font-bold text-base text-center">
-                  ID del incidente: {selectedAlert.alert_table_id}
-                </span>
-                <span className="font-bold text-base text-center">
-                  Nodo Afectado: {selectedAlert.device?.hostname}
-                </span>
+                <div className="flex items-center">
+                  <CircleSlash className="w-8 h-8 mr-1" />
+                  <span className="font-bold text-base text-center">
+                    ID del incidente: {selectedAlert.alert_table_id}
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <ChartNetwork className="w-8 h-8 -mr-2" />
+                  <span className="font-bold text-base text-center">
+                    Nodo Afectado: {selectedAlert.device?.hostname}
+                  </span>
+                </div>
               </div>
-              <div className="font-semibold mb-1">Estado</div>
+              <div className="flex items-center">
+                <Siren className="w-4 h-4 inline-block mr-1" />
+                <div className="font-semibold mb-1">Estado</div>
+              </div>
               <div className="bg-white rounded-lg p-3 mb-3 text-sm text-gray-700 shadow-inner">
                 {selectedAlert.status === "OK" ? "Resuelto" : "Activo"} - Tiempo
                 de recuperación:{" "}
@@ -391,7 +430,12 @@ export default function AlertList() {
                   ? "Nunca"
                   : selectedAlert.recovered || "N/A"}
               </div>
-              <div className="font-semibold mb-1">Detalles del dispositivo</div>
+              <div className="flex items-center">
+                <ReceiptText className="w-4 h-4 inline-block mr-1" />
+                <div className="font-semibold mb-1">
+                  Detalles del dispositivo
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-2 mb-4">
                 <div className="bg-blue-100 rounded-lg px-3 py-2 flex flex-col items-center">
                   <span className="text-xs text-gray-500">Tipo</span>
@@ -419,7 +463,10 @@ export default function AlertList() {
                   </span>
                 </div>
               </div>
-              <div className="font-semibold mb-1">Ubicación</div>
+              <div className="flex items-center">
+                <LocateFixed className="w-4 h-4 inline-block mr-1" />
+                <div className="font-semibold mb-1">Ubicación</div>
+              </div>
               <div className="bg-white rounded-lg p-3 mb-4 text-sm text-gray-700 shadow-inner">
                 {selectedAlert.device?.location || "Ubicación no disponible"}
                 {selectedAlert.device?.location_lat &&
