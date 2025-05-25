@@ -2,7 +2,11 @@ import React, { useState, useEffect, useMemo } from "react";
 import AlertComponent from "./AlertComponent";
 import { Download } from "lucide-react";
 
-const severities = ["crit", "warn", "UNKNOWN"];
+const severities = [
+  { value: "crit", label: "CRITICAL" },
+  { value: "warn", label: "WARNING" },
+  { value: "DESCONOCIDO", label: "DESCONOCIDO" },
+];
 
 export default function AlertList() {
   const [alerts, setAlerts] = useState([]);
@@ -13,21 +17,25 @@ export default function AlertList() {
     tipo: "",
     severidad: "",
     region: "",
+    estado: "",
   });
-  const [updatedMinutesAgo, setUpdatedMinutesAgo] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState(null); // Cambiamos el estado para guardar el timestamp
+  const [updatedText, setUpdatedText] = useState("Justo ahora"); // Estado para el texto formateado
+  const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const [alertToComplete, setAlertToComplete] = useState(null);
 
   // Obtener alertas de la API
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
-        const response = await fetch("http://localhost:8000/alerts");
+        const response = await fetch("http://localhost:8000/alerts_db");
         if (!response.ok) {
           throw new Error("Error al obtener las alertas");
         }
         const data = await response.json();
         setAlerts(data);
         setSelectedAlert(data[0] || null);
-        setUpdatedMinutesAgo(0); // Actualizar el tiempo de actualización
+        setLastUpdated(new Date()); // Actualizar el tiempo de actualización
       } catch (err) {
         setError(err.message);
       } finally {
@@ -38,9 +46,30 @@ export default function AlertList() {
     fetchAlerts();
 
     // Opcional: Configurar actualización periódica
-    const intervalId = setInterval(fetchAlerts, 300000); // Actualizar cada minuto
+    const intervalId = setInterval(fetchAlerts, 300000); // Actualizar cada 5 minutos
 
-    return () => clearInterval(intervalId);
+    // Configurar intervalo para actualizar el texto cada segundo
+    const updateInterval = setInterval(() => {
+      if (lastUpdated) {
+        const seconds = Math.floor((new Date() - lastUpdated) / 1000);
+
+        if (seconds < 60) {
+          setUpdatedText(
+            `Actualizado hace ${seconds} segundo${seconds !== 1 ? "s" : ""}`
+          );
+        } else {
+          const minutes = Math.floor(seconds / 60);
+          setUpdatedText(
+            `Actualizado hace ${minutes} minuto${minutes !== 1 ? "s" : ""}`
+          );
+        }
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+      clearInterval(updateInterval);
+    };
   }, []);
 
   // Obtener tipos y regiones únicas de las alertas
@@ -55,22 +84,48 @@ export default function AlertList() {
 
   // Filtros funcionales
   const filteredAlerts = useMemo(() => {
-    return alerts.filter((a) => {
+    const userType = sessionStorage.getItem("userType");
+
+    // Primero aplicamos el filtro por tipo de usuario
+    const userFilteredAlerts = alerts.filter(
+      (a) => userType === "administrador" || a.completado !== "SI"
+    );
+
+    // Luego aplicamos los demás filtros
+    return userFilteredAlerts.filter((a) => {
       const severityMatch =
         !filters.severidad ||
-        (filters.severidad === "UNKNOWN"
+        (filters.severidad === "DESCONOCIDO"
           ? a.severity === null ||
             a.severity === undefined ||
-            a.severity === "UNKNOWN"
+            a.severity === "DESCONOCIDO"
           : a.severity === filters.severidad);
 
       return (
         (!filters.tipo || (a.device?.type || "Alerta") === filters.tipo) &&
         severityMatch &&
-        (!filters.region || a.device?.location === filters.region)
+        (!filters.region || a.device?.location === filters.region) &&
+        (!filters.estado ||
+          (filters.estado === "Resuelto"
+            ? a.status === "OK"
+            : a.status !== "OK"))
       );
     });
   }, [alerts, filters]);
+
+  useEffect(() => {
+    // Este efecto asegurará que el selectedAlert siempre esté actualizado
+    if (selectedAlert) {
+      const updatedAlert = alerts.find(
+        (a) => a.alert_table_id === selectedAlert.alert_table_id
+      );
+      if (updatedAlert) {
+        setSelectedAlert(updatedAlert);
+      } else {
+        setSelectedAlert(null);
+      }
+    }
+  }, [alerts, selectedAlert?.alert_table_id]);
 
   if (loading) {
     return (
@@ -96,16 +151,115 @@ export default function AlertList() {
     );
   }
 
+  // Añadir esta función dentro del componente AlertList
+  const handleCompleteAlert = async (alertId) => {
+    const userType = sessionStorage.getItem("userType");
+
+    if (userType === "usuario") {
+      setAlertToComplete(alertId);
+      setShowConfirmPopup(true);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8000/alerts_db/${alertId}/complete`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to complete alert");
+
+      // Actualizar el estado local
+      setAlerts(
+        alerts.map((alert) =>
+          alert.alert_table_id === alertId
+            ? { ...alert, completado: "SI" }
+            : alert
+        )
+      );
+
+      // Si es usuario, quitamos la alerta de la lista inmediatamente
+      const userType = sessionStorage.getItem("userType");
+      if (userType === "usuario") {
+        setAlerts(alerts.filter((alert) => alert.alert_table_id !== alertId));
+        setSelectedAlert(null);
+      }
+
+      setSelectedAlert(null);
+      setShowConfirmPopup(false);
+    } catch (error) {
+      console.error("Error completing alert:", error);
+    }
+  };
+
+  const confirmCompleteAlert = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/alerts_db/${alertToComplete}/complete`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to complete alert");
+
+      setAlerts(
+        alerts.filter((alert) => alert.alert_table_id !== alertToComplete)
+      );
+      setSelectedAlert(null);
+      setShowConfirmPopup(false);
+    } catch (error) {
+      console.error("Error completing alert:", error);
+    }
+  };
+
+  // Añadir esta función dentro del componente AlertList
+  const handleNoCompleteAlert = async (alertId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/alerts_db/${alertId}/no_complete`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to no complete alert");
+
+      // Actualizar el estado local
+      setAlerts(
+        alerts.map((alert) =>
+          alert.alert_table_id === alertId
+            ? { ...alert, completado: "NO" }
+            : alert
+        )
+      );
+    } catch (error) {
+      console.error("Error completing alert:", error);
+    }
+  };
+
   return (
-    <div className="w-full h-screen flex flex-col items-center bg-[#f7f8fa] min-h-0">
+    <div className="w-full h-screen flex flex-col items-center bg-[#f7f8fa] min-h-0 relative">
       <div className="w-full h-full max-w-6xl bg-white rounded-xl shadow flex-1 flex flex-col gap-4">
         <div className="flex flex-row gap-8 h-full min-h-0 p-8">
           {/* Columna izquierda: lista de alertas */}
           <div className="flex-1 min-w-[260px] max-w-[320px] flex flex-col">
             <h1 className="text-2xl font-bold mb-2">Alertas</h1>
-            <div className="text-xs text-gray-400 mb-2">
-              Updated {updatedMinutesAgo} minutes ago
-            </div>
+            <div className="text-xs text-gray-400 mb-2">{updatedText}</div>
             <div className="overflow-y-scroll flex-1 flex flex-col gap-3 pr-1 min-h-0">
               {filteredAlerts.map((item) => (
                 <div
@@ -124,6 +278,7 @@ export default function AlertList() {
                     recovered={item.recovered}
                     device={item.device}
                     last_ok={item.last_ok}
+                    completado={item.completado}
                   />
                 </div>
               ))}
@@ -156,20 +311,39 @@ export default function AlertList() {
               <span className="font-medium text-sm mt-2">Severidad</span>
               {severities.map((s) => (
                 <button
-                  key={s}
+                  key={s.value}
                   className={`rounded-lg px-3 py-1 text-sm font-medium text-left cursor-pointer ${
-                    filters.severidad === s
+                    filters.severidad === s.value
                       ? "bg-blue-200 text-blue-800"
                       : "bg-gray-200 text-gray-700"
                   }`}
                   onClick={() =>
                     setFilters((f) => ({
                       ...f,
-                      severidad: f.severidad === s ? "" : s,
+                      severidad: f.severidad === s.value ? "" : s.value,
                     }))
                   }
                 >
-                  {s}
+                  {s.label}
+                </button>
+              ))}
+              <span className="font-medium text-sm mt-2">Estado</span>
+              {["Activo", "Resuelto"].map((e) => (
+                <button
+                  key={e}
+                  className={`rounded-lg px-3 py-1 text-sm font-medium text-left cursor-pointer ${
+                    filters.estado === e
+                      ? "bg-blue-200 text-blue-800"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
+                  onClick={() =>
+                    setFilters((f) => ({
+                      ...f,
+                      estado: f.estado === e ? "" : e,
+                    }))
+                  }
+                >
+                  {e}
                 </button>
               ))}
               <span className="font-medium text-sm mt-2">Región</span>
@@ -209,7 +383,6 @@ export default function AlertList() {
                   Nodo Afectado: {selectedAlert.device?.hostname}
                 </span>
               </div>
-
               <div className="font-semibold mb-1">Estado</div>
               <div className="bg-white rounded-lg p-3 mb-3 text-sm text-gray-700 shadow-inner">
                 {selectedAlert.status === "OK" ? "Resuelto" : "Activo"} - Tiempo
@@ -218,7 +391,6 @@ export default function AlertList() {
                   ? "Nunca"
                   : selectedAlert.recovered || "N/A"}
               </div>
-
               <div className="font-semibold mb-1">Detalles del dispositivo</div>
               <div className="grid grid-cols-2 gap-2 mb-4">
                 <div className="bg-blue-100 rounded-lg px-3 py-2 flex flex-col items-center">
@@ -247,7 +419,6 @@ export default function AlertList() {
                   </span>
                 </div>
               </div>
-
               <div className="font-semibold mb-1">Ubicación</div>
               <div className="bg-white rounded-lg p-3 mb-4 text-sm text-gray-700 shadow-inner">
                 {selectedAlert.device?.location || "Ubicación no disponible"}
@@ -259,14 +430,67 @@ export default function AlertList() {
                     </div>
                   )}
               </div>
-
-              <button className="mt-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg px-4 py-2 shadow cursor-pointer">
+              {/* <button
+                onClick={() =>
+                  handleCompleteAlert(selectedAlert.alert_table_id)
+                }
+                className="mt-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg px-4 py-2 shadow cursor-pointer"
+              >
                 Completar
-              </button>
+              </button> */}
+              {selectedAlert.completado === "SI" ? (
+                <button
+                  onClick={() =>
+                    handleNoCompleteAlert(selectedAlert.alert_table_id)
+                  }
+                  className="mt-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg px-4 py-2 shadow cursor-pointer"
+                >
+                  Regresar
+                </button>
+              ) : (
+                <button
+                  onClick={() =>
+                    handleCompleteAlert(selectedAlert.alert_table_id)
+                  }
+                  className="mt-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg px-4 py-2 shadow cursor-pointer"
+                >
+                  Completar
+                </button>
+              )}
             </div>
           )}
         </div>
       </div>
+      {showConfirmPopup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+            <h3 className="text-lg font-bold mb-4 text-center">
+              Confirmar acción
+            </h3>
+            <p className="mb-3 text-center">
+              ¿Estás seguro quieres completar esta alerta?
+            </p>
+            <p className="text-sm mt-2 mb-5 text-gray-500 text-center">
+              Recuerda que estará bajo supervisión de un administrador, quien se
+              encargará de verificar el estatus.
+            </p>
+            <div className="flex justify-evenly gap-3">
+              <button
+                onClick={() => setShowConfirmPopup(false)}
+                className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmCompleteAlert}
+                className="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 cursor-pointer"
+              >
+                Aceptar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
