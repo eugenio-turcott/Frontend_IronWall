@@ -24,6 +24,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuBadge,
 } from "@/Components/ui/sidebar";
 import {
   Collapsible,
@@ -96,6 +97,7 @@ export function AppSidebar() {
   });
   const [activeItem, setActiveItem] = useState("Panel");
   const { user } = useAuth();
+  const [alertCount, setAlertCount] = useState(0);
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -159,6 +161,36 @@ export function AppSidebar() {
     }
   }, []);
 
+  useEffect(() => {
+    const storedCount = sessionStorage.getItem("numberAlerts");
+    setAlertCount(storedCount ? parseInt(storedCount) : 0);
+
+    // Escuchar cambios en el sessionStorage (para otras pestañas)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "numberAlerts") {
+        setAlertCount(e.newValue ? parseInt(e.newValue) : 0);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Escuchar cambios en la misma pestaña
+    const handleInternalChange = () => {
+      const newCount = sessionStorage.getItem("numberAlerts");
+      if (newCount !== null) {
+        setAlertCount(parseInt(newCount));
+      }
+    };
+
+    // Configurar un intervalo para verificar cambios (puedes ajustar el tiempo)
+    const intervalId = setInterval(handleInternalChange, 500);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      clearInterval(intervalId);
+    };
+  }, []);
+
   const handleItemClick = (
     title: string,
     url?: string,
@@ -170,31 +202,18 @@ export function AppSidebar() {
     }
 
     if (!skipNavigation && url) {
-      const currentPath = window.location.pathname;
-      const isAlertRoute =
-        currentPath === "/alertas" || currentPath === "/notificaciones";
-      const isDashboardGraph = url.startsWith("#");
-
-      if (isDashboardGraph) {
-        // Para gráficas del dashboard (usando hash)
-        if (currentPath !== "/dashboard") {
-          // Si no estamos en dashboard, redirigimos primero
+      if (url.startsWith("#")) {
+        // Para gráficas del dashboard
+        if (window.location.pathname !== "/dashboard") {
+          // Si no estamos en dashboard, navegar primero allí
           window.location.href = `/dashboard${url}`;
         } else {
-          // Si ya estamos en dashboard, solo actualizamos el hash SIN recargar
-          window.history.pushState(null, "", url);
-
-          // Disparamos evento personalizado para que Dashboard.jsx lo detecte
-          window.dispatchEvent(new Event("hashChanged"));
+          // Si ya estamos en dashboard, actualizar el hash
+          window.location.hash = url.substring(1);
         }
       } else {
-        // Para rutas normales (/alertas, /notificaciones)
-        if (
-          window.location.pathname !==
-          new URL(url, window.location.origin).pathname
-        ) {
-          window.location.href = url;
-        }
+        // Para otras rutas
+        window.location.href = url;
       }
     }
   };
@@ -305,6 +324,11 @@ export function AppSidebar() {
                           )}
                         </a>
                       </SidebarMenuButton>
+                      {item.title === "Alertas" && !isCollapsed && (
+                        <SidebarMenuBadge>
+                          {alertCount > 0 ? alertCount : "0"}
+                        </SidebarMenuBadge>
+                      )}
                     </SidebarMenuItem>
                   ))}
                 </SidebarMenu>
