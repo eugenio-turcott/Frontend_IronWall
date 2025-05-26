@@ -2,6 +2,7 @@ import React, { useState, useEffect, PureComponent } from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { generateForecast } from "@/lib/utilsForecast";
 import {
   XAxis,
   YAxis,
@@ -164,36 +165,25 @@ const data4 = [
   },
 ];
 
-const data5 = [
-  {
-    name: "A",
-    pv: 240,
-  },
-  {
-    name: "B",
-    pv: 150,
-  },
-  {
-    name: "C",
-    pv: 600,
-  },
-  {
-    name: "D",
-    pv: 400,
-  },
-  {
-    name: "E",
-    pv: 200,
-  },
-  {
-    name: "F",
-    pv: 380,
-  },
-  {
-    name: "G",
-    pv: 140,
-  },
-];
+const data5 = generateForecast([
+  { name: "Jan", pv: 100, forecast: false },
+  { name: "Feb", pv: 120, forecast: false },
+  { name: "Mar", pv: 140, forecast: false },
+  { name: "Apr", pv: 160, forecast: false },
+  { name: "May", pv: 180, forecast: false },
+], 3);
+
+
+const fullData = data5.map((d, i, arr) => {
+  const isLastReal =
+    !d.forecast && (i === arr.length - 1 || arr[i + 1].forecast);
+
+  return {
+    name: d.name,
+    pv_real: d.forecast ? null : d.pv,
+    pv_forecast: d.forecast || isLastReal ? d.pv : null
+  };
+});
 
 export default function Dashboard() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -351,16 +341,32 @@ export default function Dashboard() {
     ),
     prediccion_crecimiento: (
       <ResponsiveContainer>
-        <LineChart
-          data={data5}
-          margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-        >
+        <LineChart data={fullData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
           <YAxis />
           <Tooltip />
-          <ReferenceLine x="C" stroke="red" label="May 2025" />
-          <Line type="monotone" dataKey="pv" stroke="#8884d8" />
+          <ReferenceLine x="May" stroke="red" label="Delimiter" />
+
+          {/* Línea sólida para datos reales */}
+          <Line
+            type="monotone"
+            dataKey="pv_real"
+            stroke="#4f46e5"
+            strokeDasharray="0"
+            dot={false}
+            connectNulls
+          />
+
+          {/* Línea punteada para datos previstos */}
+          <Line
+            type="monotone"
+            dataKey="pv_forecast"
+            stroke="#4f46e5"
+            strokeDasharray="5 5"
+            dot={false}
+            connectNulls
+          />
         </LineChart>
       </ResponsiveContainer>
     ),
