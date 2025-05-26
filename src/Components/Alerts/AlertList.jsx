@@ -139,6 +139,15 @@ export default function AlertList() {
     }
   }, [alerts, selectedAlert?.alert_table_id]);
 
+  useEffect(() => {
+    if (alerts.length > 0) {
+      const noCompletedAlerts = alerts.filter(
+        (alert) => alert.completado === "NO"
+      ).length;
+      sessionStorage.setItem("numberAlerts", noCompletedAlerts.toString());
+    }
+  }, [alerts]);
+
   if (loading) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-[#f7f8fa]">
