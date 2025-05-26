@@ -332,14 +332,17 @@ export default function FocusGraph({ selectedGraph, onClose }) {
           </Select>
         </div>
 
-        <div className="flex space-x-2 mt-4">
-          <Button className="flex-1" onClick={applyFilters}>
+        <div className="mt-4">
+          <Button
+            className="flex-1 w-full mb-2 cursor-pointer"
+            onClick={applyFilters}
+          >
             <Filter className="mr-2 h-4 w-4" />
             Aplicar Filtros
           </Button>
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 w-full cursor-pointer"
             onClick={() => {
               setSelectedYear("all");
               setDateRange([
