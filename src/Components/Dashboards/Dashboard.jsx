@@ -22,6 +22,7 @@ import { LineChart, Line, ReferenceLine } from "recharts";
 import HistoricoCrecimiento from "./HistoricoCrecimiento";
 import PrediccionCrecimiento from "./PrediccionCrecimiento";
 import PieChartWithNeedle from "../ui/PieChartWithNeedle";
+import FallasTop from "./Fallas";
 
 const data = [
   { name: "A", value: 80, color: "#ff0000" },
@@ -435,7 +436,16 @@ export default function Dashboard() {
               sessionStorage.setItem("activeSidebarItem", "Panel");
             }}
           />
-        ) : selectedGraph ? (
+        ) : selectedGraph === "fallas" ? (
+          <FallasTop
+            selectedGraph={selectedGraph}
+            onClose={() => {
+              setSelectedGraph(null);
+              window.location.hash = "";
+              sessionStorage.setItem("Panel","");
+            }}
+          />
+        ) :   selectedGraph ? (
           <div className="w-full h-full flex items-center justify-center text-gray-400 mt-4 border-2">
             Componente para {selectedGraph} no implementado aún.
           </div>

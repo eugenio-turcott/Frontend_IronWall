@@ -378,8 +378,6 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
           )}
         </div>
       </div>
-
-      {/* Panel de detalles */}
       <div className="flex flex-col w-1/5 border-l p-4">
         <h3 className="font-semibold text-lg">Detalles</h3>
         {selectedGraph === "historico_crecimiento" && (
