@@ -22,7 +22,9 @@ export default function AlertComponent({
   return (
     <div
       className={`flex items-center rounded-lg shadow border px-4 py-3 w-full min-h-[70px] ${
-        completado === "SI" ? "bg-green-100 border-green-400" : "bg-white"
+        status === "OK" || completado === "SI"
+          ? "bg-green-100 border-green-400"
+          : "bg-white"
       }`}
     >
       {/* Icono de alerta */}
