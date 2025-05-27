@@ -40,7 +40,6 @@ export default function FallasTop({ selectedGraph, onClose }) {
 
   return (
     <div className="flex w-full h-full bg-white rounded-xl shadow mt-4 border relative">
-      {/* Close button */}
       <Button
         variant="ghost"
         size="icon"
@@ -50,7 +49,6 @@ export default function FallasTop({ selectedGraph, onClose }) {
         <X className="h-4 w-4" />
       </Button>
 
-      {/* Chart */}
       <div className="flex flex-col w-3/5 p-4">
         <h2 className="text-xl font-bold mb-4">Top 5 Fallas por IP</h2>
 
@@ -92,7 +90,6 @@ export default function FallasTop({ selectedGraph, onClose }) {
         )}
       </div>
 
-      {/* Details Panel */}
       <div className="flex flex-col w-1/5 border-l p-4">
         <h3 className="font-semibold text-lg">Detalles</h3>
         {!loading && !error && failuresData.length > 0 ? (
