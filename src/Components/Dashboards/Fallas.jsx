@@ -50,7 +50,7 @@ export default function FallasTop({ selectedGraph, onClose }) {
       </Button>
 
       <div className="flex flex-col w-3/5 p-4">
-        <h2 className="text-xl font-bold mb-4">Top 5 Fallas por IP</h2>
+        <h2 className="text-xl font-bold mb-4">Top 5 Fallas por Dispositivo</h2>
 
         {loading ? (
           <div className="h-full flex items-center justify-center">Cargando datos...</div>
