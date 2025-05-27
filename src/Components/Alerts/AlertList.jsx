@@ -100,7 +100,9 @@ export default function AlertList() {
 
     // Primero aplicamos el filtro por tipo de usuario
     const userFilteredAlerts = alerts.filter(
-      (a) => userType === "administrador" || a.completado !== "SI"
+      (a) =>
+        userType === "administrador" ||
+        (a.completado !== "SI" && a.status !== "OK") // <-- Nueva condición
     );
 
     // Luego aplicamos los demás filtros
@@ -309,7 +311,7 @@ export default function AlertList() {
             </div>
           </div>
           {/* Columna central: filtros */}
-          <div className="flex flex-col min-w-[220px] max-w-[260px] bg-[#f5f6fa] rounded-lg p-4 border mx-2 self-start">
+          <div className="flex flex-col min-w-[220px] max-w-[260px] bg-[#f5f6fa] rounded-lg p-4 border mx-2 self-start h-full">
             <div className="flex items-center">
               <ListFilter className="w-8 h-8" />
               <h2 className="text-xl font-bold mb-2 ml-2">Filtros</h2>
@@ -320,24 +322,26 @@ export default function AlertList() {
                 <FileWarning className="w-4 h-4 inline-block mr-1" />
                 <span className="font-medium text-sm">Tipo de alerta</span>
               </div>
-              {tipos.map((t) => (
-                <button
-                  key={t}
-                  className={`rounded-lg px-3 py-1 text-sm font-medium text-left cursor-pointer ${
-                    filters.tipo === t
-                      ? "bg-blue-200 text-blue-800"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
-                  onClick={() =>
-                    setFilters((f) => ({
-                      ...f,
-                      tipo: f.tipo === t ? "" : t,
-                    }))
-                  }
-                >
-                  {t}
-                </button>
-              ))}
+              <div className="overflow-y-auto flex-1 flex flex-col gap-3 pr-1 max-h-20">
+                {tipos.map((t) => (
+                  <button
+                    key={t}
+                    className={`rounded-lg px-3 py-1 text-sm font-medium text-left cursor-pointer ${
+                      filters.tipo === t
+                        ? "bg-blue-200 text-blue-800"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                    onClick={() =>
+                      setFilters((f) => ({
+                        ...f,
+                        tipo: f.tipo === t ? "" : t,
+                      }))
+                    }
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
               <div>
                 <MessageCircleWarning className="w-4 h-4 inline-block mr-1" />
                 <span className="font-medium text-sm mt-2">Severidad</span>
@@ -386,30 +390,34 @@ export default function AlertList() {
                 <MapPinned className="w-4 h-4 inline-block mr-1" />
                 <span className="font-medium text-sm mt-2">Región</span>
               </div>
-              {regiones.map((r) => (
-                <button
-                  key={r}
-                  className={`rounded-lg px-3 py-1 text-sm font-medium text-left cursor-pointer ${
-                    filters.region === r
-                      ? "bg-blue-200 text-blue-800"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
-                  onClick={() =>
-                    setFilters((f) => ({
-                      ...f,
-                      region: f.region === r ? "" : r,
-                    }))
-                  }
-                >
-                  {r}
+              <div className="overflow-y-auto flex-1 flex flex-col gap-3 pr-1 max-h-20">
+                {regiones.map((r) => (
+                  <button
+                    key={r}
+                    className={`rounded-lg px-3 py-1 text-sm font-medium text-left cursor-pointer ${
+                      filters.region === r
+                        ? "bg-blue-200 text-blue-800"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                    onClick={() =>
+                      setFilters((f) => ({
+                        ...f,
+                        region: f.region === r ? "" : r,
+                      }))
+                    }
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {sessionStorage.getItem("userType") === "administrador" && (
+              <div className="w-full max-w-6xl flex justify-end pt-8 pb-2 pr-8">
+                <button className="flex items-center gap-2 border rounded-lg px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium shadow-sm hover:shadow-md cursor-pointer">
+                  <Download className="w-4 h-4" /> Descargar Reporte
                 </button>
-              ))}
-            </div>
-            <div className="w-full max-w-6xl flex justify-end pt-8 pb-2 pr-8">
-              <button className="flex items-center gap-2 border rounded-lg px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium shadow-sm hover:shadow-md cursor-pointer">
-                <Download className="w-4 h-4" /> Descargar Reporte
-              </button>
-            </div>
+              </div>
+            )}
           </div>
           {/* Columna derecha: detalles de alerta seleccionada */}
           {selectedAlert && (
