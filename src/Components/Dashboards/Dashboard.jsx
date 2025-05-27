@@ -194,16 +194,18 @@ export default function Dashboard() {
                   <PieChartWithNeedle />
                 </div>
               </div>
-              <div className="z-20 mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-xs gap-1 cursor-pointer"
-                >
-                  <Download className="w-3 h-3" />
-                  Descargar Reporte
-                </Button>
-              </div>
+              {sessionStorage.getItem("userType") === "administrador" && (
+                <div className="z-20 mt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs gap-1 cursor-pointer"
+                  >
+                    <Download className="w-3 h-3" />
+                    Descargar Reporte
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           <div
@@ -263,64 +265,18 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
               </div>
-              <div className="z-20 mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-xs gap-1 cursor-pointer"
-                >
-                  <Download className="w-3 h-3" />
-                  Descargar Reporte
-                </Button>
-              </div>
-            </div>
-          </div>
-          <div
-            className={cn(
-              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[200px] h-[200px] cursor-pointer"
-            )}
-            onClick={() => handleGraphClick("trafico_red")}
-          >
-            <div className="px-5">
-              <div className="mb-4 -mt-2 text-center">
-                <h1 className="text-l font-bold">Tráfico de red</h1>
-                <p className="text-xs text-gray-500">Mayo 2025</p>
-              </div>
-              <div
-                className="z-10 h-[80px]"
-                onClick={() => handleGraphClick("trafico_red")}
-              >
-                <div className="z-10 flex justify-center">
-                  <ResponsiveContainer width="100%" height={80}>
-                    <RadarChart
-                      cx="50%"
-                      cy="50%"
-                      outerRadius="100%"
-                      data={data3}
-                    >
-                      <PolarGrid />
-                      <Radar
-                        name="Mike"
-                        dataKey="A"
-                        stroke="#8884d8"
-                        fill="#8884d8"
-                        fillOpacity={0.6}
-                        className="cursor-pointer"
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
+              {sessionStorage.getItem("userType") === "administrador" && (
+                <div className="z-20 mt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs gap-1 cursor-pointer"
+                  >
+                    <Download className="w-3 h-3" />
+                    Descargar Reporte
+                  </Button>
                 </div>
-              </div>
-              <div className="z-20 mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-xs gap-1 cursor-pointer"
-                >
-                  <Download className="w-3 h-3" />
-                  Descargar Reporte
-                </Button>
-              </div>
+              )}
             </div>
           </div>
           <div
@@ -360,16 +316,18 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
               </div>
-              <div className="z-20 mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-xs gap-1 cursor-pointer"
-                >
-                  <Download className="w-3 h-3" />
-                  Descargar Reporte
-                </Button>
-              </div>
+              {sessionStorage.getItem("userType") === "administrador" && (
+                <div className="z-20 mt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs gap-1 cursor-pointer"
+                  >
+                    <Download className="w-3 h-3" />
+                    Descargar Reporte
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           <div
@@ -405,16 +363,18 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
               </div>
-              <div className="z-20 mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-xs gap-1 cursor-pointer"
-                >
-                  <Download className="w-3 h-3" />
-                  Descargar Reporte
-                </Button>
-              </div>
+              {sessionStorage.getItem("userType") === "administrador" && (
+                <div className="z-20 mt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs gap-1 cursor-pointer"
+                  >
+                    <Download className="w-3 h-3" />
+                    Descargar Reporte
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -442,10 +402,10 @@ export default function Dashboard() {
             onClose={() => {
               setSelectedGraph(null);
               window.location.hash = "";
-              sessionStorage.setItem("Panel","");
+              sessionStorage.setItem("Panel", "");
             }}
           />
-        ) :   selectedGraph ? (
+        ) : selectedGraph ? (
           <div className="w-full h-full flex items-center justify-center text-gray-400 mt-4 border-2">
             Componente para {selectedGraph} no implementado aún.
           </div>

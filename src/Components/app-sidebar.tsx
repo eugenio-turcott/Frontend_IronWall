@@ -82,11 +82,6 @@ const items_avisos = [
     url: "/alertas",
     icon: TriangleAlertIcon,
   },
-  {
-    title: "Notificaciones",
-    url: "/notificaciones",
-    icon: BellIcon,
-  },
 ];
 
 export function AppSidebar() {
