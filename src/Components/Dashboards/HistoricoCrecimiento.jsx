@@ -6,6 +6,8 @@ import "react-date-range/dist/styles.css"; // Estilo principal
 import "react-date-range/dist/theme/default.css"; // Tema por defecto
 import {
   Select,
+  SelectGroup,
+  SelectLabel,
   SelectContent,
   SelectItem,
   SelectTrigger,
@@ -19,23 +21,9 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  BarChart,
-  Bar,
-  Rectangle,
-  LineChart,
-  Line,
-  ReferenceLine,
 } from "recharts";
 
-export default function FocusGraph({ selectedGraph, onClose }) {
+export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
   const [dateRange, setDateRange] = useState([
     { startDate: new Date(), endDate: new Date(), key: "selection" },
   ]);
@@ -48,7 +36,7 @@ export default function FocusGraph({ selectedGraph, onClose }) {
   const [selectedIP, setSelectedIP] = useState("all");
   const [availableIPs, setAvailableIPs] = useState([]);
 
-  // En FocusGraph.jsx, modifica el useEffect que carga los datos:
+  // En HistoricoCrecimiento.jsx, modifica el useEffect que carga los datos:
   useEffect(() => {
     const fetchGraphData = async () => {
       try {
@@ -116,19 +104,11 @@ export default function FocusGraph({ selectedGraph, onClose }) {
         const ipValues = {};
         ips.forEach((ip, i) => {
           const val = item[i];
-          const numericValue =
-            typeof val === "string" && val.includes("JS:")
-              ? parseFloat(val.split("JS:")[0])
-              : Number(val);
-          ipValues[ip] = !isNaN(numericValue) ? numericValue : 0;
+          ipValues[ip] = !isNaN(val) ? val : 0;
         });
 
         const totalValue = item.reduce((sum, val) => {
-          const numericValue =
-            typeof val === "string" && val.includes("JS:")
-              ? parseFloat(val.split("JS:")[0])
-              : Number(val);
-          return !isNaN(numericValue) ? sum + numericValue : sum;
+          return !isNaN(val) ? sum + val : sum;
         }, 0);
 
         return {
@@ -298,12 +278,15 @@ export default function FocusGraph({ selectedGraph, onClose }) {
               <SelectValue placeholder="Seleccionar IP" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas las IPs</SelectItem>
-              {availableIPs.map((ip) => (
-                <SelectItem key={ip} value={ip}>
-                  {ip}
-                </SelectItem>
-              ))}
+              <SelectGroup>
+                <SelectLabel>IPs disponibles</SelectLabel>
+                <SelectItem value="all">Todas las IPs</SelectItem>
+                {availableIPs.map((ip, i) => (
+                  <SelectItem key={`${ip}+${i}`} value={ip}>
+                    {ip}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             </SelectContent>
           </Select>
         </div>
@@ -332,14 +315,17 @@ export default function FocusGraph({ selectedGraph, onClose }) {
           </Select>
         </div>
 
-        <div className="flex space-x-2 mt-4">
-          <Button className="flex-1" onClick={applyFilters}>
+        <div className="mt-4">
+          <Button
+            className="flex-1 w-full mb-2 cursor-pointer"
+            onClick={applyFilters}
+          >
             <Filter className="mr-2 h-4 w-4" />
             Aplicar Filtros
           </Button>
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 w-full cursor-pointer"
             onClick={() => {
               setSelectedYear("all");
               setDateRange([

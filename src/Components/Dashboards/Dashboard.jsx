@@ -19,7 +19,8 @@ import {
 } from "recharts";
 import { BarChart, Bar, Rectangle } from "recharts";
 import { LineChart, Line, ReferenceLine } from "recharts";
-import FocusGraph from "./FocusGraph";
+import HistoricoCrecimiento from "./HistoricoCrecimiento";
+import PrediccionCrecimiento from "./PrediccionCrecimiento";
 import PieChartWithNeedle from "../ui/PieChartWithNeedle";
 
 const data = [
@@ -416,8 +417,8 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-        {selectedGraph ? (
-          <FocusGraph
+        {selectedGraph === "historico_crecimiento" ? (
+          <HistoricoCrecimiento
             selectedGraph={selectedGraph}
             onClose={() => {
               setSelectedGraph(null);
@@ -425,6 +426,19 @@ export default function Dashboard() {
               sessionStorage.setItem("activeSidebarItem", "Panel");
             }}
           />
+        ) : selectedGraph === "prediccion_crecimiento" ? (
+          <PrediccionCrecimiento
+            selectedGraph={selectedGraph}
+            onClose={() => {
+              setSelectedGraph(null);
+              window.location.hash = "";
+              sessionStorage.setItem("activeSidebarItem", "Panel");
+            }}
+          />
+        ) : selectedGraph ? (
+          <div className="w-full h-full flex items-center justify-center text-gray-400 mt-4 border-2">
+            Componente para {selectedGraph} no implementado aún.
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400 mt-4 border-2">
             Selecciona una gráfica para ver los detalles.
