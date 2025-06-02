@@ -23,6 +23,7 @@ import HistoricoCrecimiento from "./HistoricoCrecimiento";
 import PrediccionCrecimiento from "./PrediccionCrecimiento";
 import PieChartWithNeedle from "../ui/PieChartWithNeedle";
 import FallasTop from "./Fallas";
+import ConsumoTotal from "./ConsumoTotal";
 
 const data = [
   { name: "A", value: 80, color: "#ff0000" },
@@ -405,6 +406,17 @@ export default function Dashboard() {
               sessionStorage.setItem("Panel", "");
             }}
           />
+
+        ) : selectedGraph === "consumo_total" ? (
+          <ConsumoTotal
+            selectedGraph={selectedGraph}
+            onClose={() => {
+              setSelectedGraph(null);
+              window.location.hash = "";
+              sessionStorage.setItem("activeSidebarItem", "Panel");
+            }}
+          />
+
         ) : selectedGraph ? (
           <div className="w-full h-full flex items-center justify-center text-gray-400 mt-4 border-2">
             Componente para {selectedGraph} no implementado aún.

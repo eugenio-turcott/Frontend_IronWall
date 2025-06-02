@@ -2,36 +2,57 @@ import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-    RadialBarChart,
-    RadialBar
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
 } from "recharts";
 
 export default function ConsumoTotal({ selectedGraph, onClose }) {
-  const [consumoData, setFailuresData] = useState([]);
+  const [tipoConsumo, setTipoConsumo] = useState("externo");
+  const [consumoData, setConsumoData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  console.log(failuresData)
+
   useEffect(() => {
-  const fetchFailures = async () => {
-    try {
+    if (selectedGraph !== "consumo_total") return;
+    const fetchConsumo = async () => {
       setLoading(true);
-      const response = await fetch("http://localhost:8000/ports/failures");
-      if (!response.ok) throw new Error("Error fetching failures data");
+      setError(null);
+      try {
+        const endpoint =
+          tipoConsumo === "externo"
+            ? "http://localhost:8000/ports/total-consumption-internet"
+            : "http://localhost:8000/ports/total-consumption-nonInternet";
+        const response = await fetch(endpoint);
+        const data = await response.json();
+        setConsumoData(data);
+      } catch (err) {
+        setError("Error al obtener datos de la API: " + err.message);
+        setConsumoData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchConsumo();
+  }, [selectedGraph, tipoConsumo]);
 
-      const data = await response.json();
-      setFailuresData(data);
-    //   console.log(failuresData)
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (selectedGraph !== "consumo_total") return null;
 
-  fetchFailures();
-}, [selectedGraph]);
-
-  if (selectedGraph !== "fallas") return null;
+  // Preparar datos para AreaChart
+  const chartData = consumoData
+    ? [
+        {
+          name: "Consumo Total (GB)",
+          Entrada: consumoData.total_in_gb,
+          Salida: consumoData.total_out_gb,
+          Combinado: consumoData.total_combined_gb,
+        },
+      ]
+    : [];
 
   return (
     <div className="flex w-full h-full bg-white rounded-xl shadow mt-4 border relative">
@@ -43,77 +64,112 @@ export default function ConsumoTotal({ selectedGraph, onClose }) {
       >
         <X className="h-4 w-4" />
       </Button>
-
-      <div className="flex flex-col w-3/5 p-4">
-        <h2 className="text-xl font-bold mb-4">Top 5 Fallas por Dispositivo</h2>
-
-        {loading ? (
-          <div className="h-full flex items-center justify-center">Cargando datos...</div>
-        ) : error ? (
-          <div className="h-full flex items-center justify-center text-red-500">
-            Error: {error}
-          </div>
-        ) : failuresData.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-gray-500">
-            No hay datos disponibles
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={failuresData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              layout="vertical"
+      {/* Panel de filtros */}
+      <div className="flex flex-col w-1/5 border-r p-4 space-y-4 bg">
+        <h3 className="font-semibold text-lg">Filtros</h3>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Tipo de Consumo</label>
+          <div className="flex gap-2">
+            <Button
+              variant={tipoConsumo === "externo" ? "default" : "outline"}
+              className="flex-1 cursor-pointer"
+              onClick={() => setTipoConsumo("externo")}
             >
-              <CartesianGrid strokeDasharray="3 3" />
-   
-            <XAxis
-            type="number"
-            label={{ value: "Failures", position: "insideBottom", offset: -5 }}
-            tickFormatter={(value) => value.toLocaleString()}
-            />
-               <YAxis
-            dataKey="device"
-            type="category"
-            label={{ value: "Device", angle: -90, position: "insideLeft" }}
-            tick={{ fontSize: 12 }}
-            />
-
-              <Tooltip />
-              <Bar dataKey="fail_count" fill="#ef4444" />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
+              Externo
+            </Button>
+            <Button
+              variant={tipoConsumo === "interno" ? "default" : "outline"}
+              className="flex-1 cursor-pointer"
+              onClick={() => setTipoConsumo("interno")}
+            >
+              Interno
+            </Button>
+          </div>
+        </div>
       </div>
-
+      {/* Gráfica principal */}
+      <div className="flex flex-col w-3/5 p-4 items-center">
+        <h2 className="text-xl font-bold mb-4 justify-center">
+          Consumo Total ({tipoConsumo === "externo" ? "Externo" : "Interno"})
+        </h2>
+        <div className="w-full h-[350px] flex items-center justify-center">
+          {loading ? (
+            <div className="text-gray-500">Cargando datos...</div>
+          ) : error ? (
+            <div className="text-red-500">{error}</div>
+          ) : consumoData ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={chartData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value) => `${value?.toLocaleString()} GB`} />
+                <Area
+                  type="monotone"
+                  dataKey="Entrada"
+                  stackId="1"
+                  stroke="#8884d8"
+                  fill="#8884d8"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="Salida"
+                  stackId="1"
+                  stroke="#82ca9d"
+                  fill="#82ca9d"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="Combinado"
+                  stackId="1"
+                  stroke="#ffc658"
+                  fill="#ffc658"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-gray-500">No hay datos disponibles</div>
+          )}
+        </div>
+      </div>
+      {/* Panel de detalles */}
       <div className="flex flex-col w-1/5 border-l p-4">
         <h3 className="font-semibold text-lg">Detalles</h3>
-        {!loading && !error && failuresData.length > 0 ? (
-          <>
-            <div>
-              <h4 className="text-sm font-medium">Total fallas</h4>
-              <p className="text-2xl font-bold">
-                {failuresData.reduce((sum, item) => sum + item.fail_count, 0).toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium">Número de Dispositivos</h4>
-              <p>{failuresData.length}</p>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium">Dispositivos listadas</h4>
-              <ul className="list-disc list-inside text-sm mt-2 max-h-48 overflow-auto">
-                {failuresData.map((item) => (
-                    <div key={item.device}>
-                        {item.device}: {typeof item.fail_count === 'number' ? item.fail_count.toLocaleString() : '0'}
-                    </div>
-                    ))
-                    }
-              </ul>
-            </div>
-          </>
-        ) : (
-          <p className="text-gray-500 mt-2">No hay detalles disponibles</p>
-        )}
+        <div className="mt-4 space-y-4">
+          <div>
+            <h4 className="text-sm font-medium">Entrada (GB)</h4>
+            <p className="text-2xl font-bold">
+              {consumoData
+                ? consumoData.total_in_gb.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })
+                : "-"}
+            </p>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium">Salida (GB)</h4>
+            <p className="text-2xl font-bold">
+              {consumoData
+                ? consumoData.total_out_gb.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })
+                : "-"}
+            </p>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium">Combinado (GB)</h4>
+            <p className="text-2xl font-bold">
+              {consumoData
+                ? consumoData.total_combined_gb.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })
+                : "-"}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
