@@ -35,6 +35,51 @@ const CustomTickY = ({ x, y, payload }) => {
   );
 };
 
+const ipMap = {
+  "172.30.246.": "172.30.246.254",
+  "172.19.255": "172.19.255.23",
+  "172.31.14": "172.31.141.1",
+  "10.61.5": "10.61.50.1",
+  "172.31.11": "172.31.113.1",
+  "172.19.25": "172.19.255.6",
+  "172.19.3": "172.19.30.1",
+  "172.19.6": "172.19.65.1",
+  "172.21.25": "172.21.255.6",
+  "172.31.243": "172.31.243.10",
+  "172.31.5": "172.31.53.1",
+  "172.28.": "172.28.0.1",
+  "172.22.1": "172.22.16.1",
+  "172.24.1": "172.24.13.1",
+  "172.31.1.": "172.31.1.100",
+  "10.2.0.": "10.2.0.254",
+  "10.1.": "10.1.5.1",
+  "172.31.10": "172.31.10.1",
+  "172.31.12": "172.31.120.1",
+  "172.31.17": "172.31.175.1",
+  "172.31.16": "172.31.160.1",
+  "172.31.21": "172.31.218.1",
+  "172.31.7": "172.31.72.1",
+  "172.24.": "172.24.0.1",
+  "172.31.33": "172.31.33.52",
+  "172.31.3": "172.31.35.1",
+  "172.30.31.": "172.30.31.254",
+  "172.255.255": "172.255.255.99",
+  "172.31.8": "172.31.86.1",
+  "172.21.28": "172.21.28.10",
+  "10.20.": "10.20.0.1",
+  "172.31.": "172.31.2.1",
+  "172.31.241": "172.31.241.10",
+  "172.30.220.": "172.30.220.254",
+  "172.31.22": "172.31.220.1",
+  "172.30.27.": "172.30.27.254",
+  "172.31.4": "172.31.45.1",
+  "172.30.89.": "172.30.89.246",
+  "172.31.1": "172.31.1.68",
+  "10.40.10": "10.40.10.1",
+  "10.20.1": "10.20.11.1",
+  "172.31.127": "172.31.127.1",
+};
+
 export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
   const [dateRange, setDateRange] = useState([
     { startDate: new Date(), endDate: new Date(), key: "selection" },
@@ -102,13 +147,25 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
 
     const startDate = new Date(apiData.meta.start * 1000);
     const step = apiData.meta.step;
-    const ips = apiData.meta.legend || [];
+    let ips = apiData.meta.legend || [];
 
-    // Obtener solo las IPs únicas (primera mitad)
-    const uniqueIPs = ips
-      .slice(0, Math.ceil(ips.length / 2))
-      .filter((ip) => ip && ip.trim() !== "");
-    setAvailableIPs(uniqueIPs);
+    // Función para mapear las IPs según ipMap
+    const mapIPs = (ipList) => {
+      return ipList.map((ip) => {
+        if (!ip) return ip;
+
+        // Buscar coincidencias parciales en las claves de ipMap
+        const matchedKey = Object.keys(ipMap).find((key) => ip.startsWith(key));
+
+        // Si encontramos una coincidencia, devolvemos el valor mapeado
+        // Si no, devolvemos la IP original
+        return matchedKey ? ipMap[matchedKey] : ip;
+      });
+    };
+
+    // Mapear las IPs (primera mitad del array)
+    const mappedIPs = mapIPs(ips.slice(0, Math.ceil(ips.length / 2)));
+    setAvailableIPs(mappedIPs.filter((ip) => ip && ip.trim() !== ""));
 
     return apiData.data
       .map((item, index) => {
@@ -119,14 +176,14 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
         const ipValues = {};
         const negativeIpValues = {};
 
-        // Procesar valores positivos (primera mitad)
-        uniqueIPs.forEach((ip, i) => {
+        // Procesar valores positivos con IPs mapeadas
+        mappedIPs.forEach((ip, i) => {
           const val = item[i];
           ipValues[ip] = !isNaN(val) ? val : 0;
         });
 
-        // Procesar valores negativos (segunda mitad)
-        uniqueIPs.forEach((ip, i) => {
+        // Procesar valores negativos (segunda mitad del array original)
+        mappedIPs.forEach((ip, i) => {
           const val = item[i + Math.ceil(ips.length / 2)];
           negativeIpValues[ip] = !isNaN(val) ? val : 0;
         });
@@ -152,7 +209,7 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
           date: currentDate,
           ipValues,
           negativeIpValues,
-          ips: uniqueIPs,
+          ips: mappedIPs,
         };
       })
       .filter((item) => item.tráfico > 0 || item.tráficoNegativo > 0)
