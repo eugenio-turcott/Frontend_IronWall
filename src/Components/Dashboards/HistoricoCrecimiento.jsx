@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { X, Calendar, Filter } from "lucide-react";
+import { X, Calendar, Filter, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DateRange } from "react-date-range";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
+import xcien_logo from "@/assets/xcien_logo_n.png";
+import formatBytes from "@/utils/formatBytes";
 import "react-date-range/dist/styles.css"; // Estilo principal
 import "react-date-range/dist/theme/default.css"; // Tema por defecto
 import {
@@ -22,6 +26,14 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+
+const CustomTickY = ({ x, y, payload }) => {
+  return (
+    <text x={x} y={y} fill="#666666" textAnchor="end">
+      {formatBytes(payload.value)}
+    </text>
+  );
+};
 
 export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
   const [dateRange, setDateRange] = useState([
@@ -92,8 +104,11 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
     const step = apiData.meta.step;
     const ips = apiData.meta.legend || [];
 
-    // Guardar las IPs disponibles
-    setAvailableIPs(ips.filter((ip) => ip && ip.trim() !== ""));
+    // Obtener solo las IPs únicas (primera mitad)
+    const uniqueIPs = ips
+      .slice(0, Math.ceil(ips.length / 2))
+      .filter((ip) => ip && ip.trim() !== "");
+    setAvailableIPs(uniqueIPs);
 
     return apiData.data
       .map((item, index) => {
@@ -102,26 +117,45 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
         const year = currentDate.getFullYear();
 
         const ipValues = {};
-        ips.forEach((ip, i) => {
+        const negativeIpValues = {};
+
+        // Procesar valores positivos (primera mitad)
+        uniqueIPs.forEach((ip, i) => {
           const val = item[i];
           ipValues[ip] = !isNaN(val) ? val : 0;
         });
 
-        const totalValue = item.reduce((sum, val) => {
-          return !isNaN(val) ? sum + val : sum;
-        }, 0);
+        // Procesar valores negativos (segunda mitad)
+        uniqueIPs.forEach((ip, i) => {
+          const val = item[i + Math.ceil(ips.length / 2)];
+          negativeIpValues[ip] = !isNaN(val) ? val : 0;
+        });
+
+        const totalValue = item
+          .slice(0, Math.ceil(ips.length / 2))
+          .reduce((sum, val) => {
+            return !isNaN(val) ? sum + val : sum;
+          }, 0);
+
+        const totalNegativeValue = item
+          .slice(Math.ceil(ips.length / 2))
+          .reduce((sum, val) => {
+            return !isNaN(val) ? sum + val : sum;
+          }, 0);
 
         return {
           month: `${monthName} ${year}`,
-          desktop: totalValue,
+          tráfico: totalValue,
+          tráficoNegativo: totalNegativeValue,
           timestamp: currentDate.getTime(),
           year: year.toString(),
           date: currentDate,
           ipValues,
-          ips,
+          negativeIpValues,
+          ips: uniqueIPs,
         };
       })
-      .filter((item) => item.desktop > 0)
+      .filter((item) => item.tráfico > 0 || item.tráficoNegativo > 0)
       .sort((a, b) => a.timestamp - b.timestamp);
   };
 
@@ -149,10 +183,11 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
     if (selectedIP !== "all") {
       data = data
         .map((item) => ({
-          ...item, // Mantenemos todas las propiedades
-          desktop: item.ipValues[selectedIP] || 0, // Sobreescribimos desktop con el valor de la IP seleccionada
+          ...item,
+          tráfico: item.ipValues[selectedIP] || 0,
+          tráficoNegativo: item.negativeIpValues[selectedIP] || 0,
         }))
-        .filter((item) => item.desktop > 0); // Filtramos puntos con valor 0
+        .filter((item) => item.tráfico > 0 || item.tráficoNegativo > 0);
     }
 
     setFilteredData(data);
@@ -168,41 +203,54 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
     switch (selectedGraph) {
       case "historico_crecimiento":
         return (
-          <ResponsiveContainer>
+          <ResponsiveContainer id="historico-crecimiento-grafica">
             <AreaChart
               data={dataToUse}
-              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+              margin={{ top: 10, right: 10, left: 30, bottom: 0 }}
             >
               <defs>
                 <linearGradient id="colorGrowthF" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.8} />
                   <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
                 </linearGradient>
+                <linearGradient
+                  id="colorNegativeGrowthF"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
-              <YAxis
-                tickFormatter={(value) => {
-                  // Formatear números grandes a formato más legible (1.2B, 1.2M, 1.2K)
-                  if (value >= 1000000000) {
-                    return `${(value / 1000000000).toFixed(1)}B`;
-                  }
-                  if (value >= 1000000) {
-                    return `${(value / 1000000).toFixed(1)}M`;
-                  }
-                  if (value >= 1000) {
-                    return `${(value / 1000).toFixed(1)}K`;
-                  }
-                  return value;
-                }}
+              <YAxis tick={<CustomTickY />} />
+              <Tooltip
+                formatter={(value, name, props) => [
+                  formatBytes(value),
+                  props.dataKey === "tráfico"
+                    ? "Tráfico Positivo"
+                    : "Tráfico Negativo",
+                ]}
+                labelFormatter={(label) => `Mes: ${label}`}
               />
-              <Tooltip />
               <Area
                 type="monotone"
-                dataKey="desktop"
+                dataKey="tráfico"
+                name="Tráfico Positivo"
                 stroke="#4f46e5"
                 fillOpacity={1}
                 fill="url(#colorGrowthF)"
+              />
+              <Area
+                type="monotone"
+                dataKey="tráficoNegativo"
+                name="Tráfico Negativo"
+                stroke="#ef4444"
+                fillOpacity={1}
+                fill="url(#colorNegativeGrowthF)"
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -214,8 +262,172 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
     }
   };
 
+  const buildGraphDescription = () => {
+    const dataToUse =
+      filteredData.length > 0 ? filteredData : graphData?.transformedData || [];
+
+    if (dataToUse.length === 0)
+      return "No se encontraron datos para describir.";
+
+    const firstValue = dataToUse[0].tráfico;
+    const lastValue = dataToUse[dataToUse.length - 1].tráfico;
+    const firstNegativeValue = dataToUse[0].tráficoNegativo;
+    const lastNegativeValue = dataToUse[dataToUse.length - 1].tráficoNegativo;
+
+    const delta = lastValue - firstValue;
+    const negativeDelta = lastNegativeValue - firstNegativeValue;
+
+    const trend =
+      delta > 0
+        ? "un incremento"
+        : delta < 0
+        ? "una disminución"
+        : "una estabilidad";
+
+    const negativeTrend =
+      negativeDelta > 0
+        ? "un incremento"
+        : negativeDelta < 0
+        ? "una disminución"
+        : "una estabilidad";
+
+    return `Durante el periodo analizado, se observa ${trend} en el total de datos positivos, comenzando con ${formatBytes(
+      firstValue
+    )} y terminando con ${formatBytes(
+      lastValue
+    )}. Para los datos negativos, se observa ${negativeTrend}, comenzando con ${formatBytes(
+      firstNegativeValue
+    )} y terminando con ${formatBytes(lastNegativeValue)}.`;
+  };
+
+  const handleDownloadReport = async () => {
+    const element = document.getElementById("historico-crecimiento-report");
+    if (!element) return;
+
+    try {
+      // Crear un contenedor temporal para el reporte
+      const reportContainer = document.createElement("div");
+      reportContainer.style.position = "fixed";
+      reportContainer.style.left = "-9999px";
+      reportContainer.style.width = "800px";
+      reportContainer.style.padding = "30px";
+      reportContainer.style.backgroundColor = "#ffffff";
+
+      // Obtener el elemento principal por su ID
+      const mainContainer = document.getElementById(
+        "historico-crecimiento-grafica"
+      );
+      if (!mainContainer) return;
+
+      // Clonar todo el contenido del contenedor principal
+      const clonedContainer = mainContainer.cloneNode(true);
+
+      // Ocultar elementos que no queremos en el reporte (como botones de cerrar)
+      const closeButtons = clonedContainer.querySelectorAll("button");
+      closeButtons.forEach((btn) => (btn.style.display = "none"));
+
+      const graphDescription = buildGraphDescription();
+
+      reportContainer.innerHTML = `
+        <div style="display: flex; align-items: center; margin-bottom: 20px;">
+          <img src="${xcien_logo}" alt="Logo XCien" style="height: 75px; margin-right: 25px;" />
+          <div>
+            <h1 style="font-size: 34px; color: #2d3748; margin: 0; text-align: center;">
+              Histórico de Crecimiento
+            </h1>
+            <p style="color: #718096; font-size: 20px; margin: 2px 0 0;">
+              Este gráfico muestra el crecimiento histórico de los datos
+              de la dirección IP seleccionada en el rango de fechas especificado.
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 15px; font-size: 18px; color: #4a5568;">
+          <strong>Filtros aplicados:</strong><br/>
+          Año: ${selectedYear === "all" ? "Todos" : selectedYear}<br/>
+          Rango de fechas: ${dateRange[0].startDate.toLocaleDateString()} - ${dateRange[0].endDate.toLocaleDateString()}<br/>
+          IP: ${selectedIP === "all" ? "Todas" : selectedIP}
+        </div>
+
+        <div style="height: 375px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px; margin-bottom: 10px;">
+          ${clonedContainer.innerHTML}
+        </div>
+
+        <div style="font-size: 18px; color: #4a5568; margin-bottom: 20px;">
+          <strong>Métricas:</strong><br/>
+          Total de datos: ${formatBytes(
+            (filteredData.length > 0
+              ? filteredData
+              : graphData?.transformedData || []
+            ).reduce((sum, item) => sum + (item.tráfico || 0), 0)
+          )}<br/>
+          Número de registros: ${
+            filteredData.length > 0
+              ? filteredData.length
+              : graphData?.transformedData?.length || 0
+          }
+        </div>
+
+        <div style="margin-bottom: 20px; font-size: 18px; color: #2d3748;">
+          <strong>Descripción:</strong>
+          <p style="margin-top: 5px;">
+            ${graphDescription}
+          </p>
+        </div>
+
+        <div style="text-align: right; font-size: 15px; color: #a0aec0; margin-top: 50px;">
+          Generado el ${new Date().toLocaleDateString()}<br/>
+          &copy; ${new Date().getFullYear()} XCien. Todos los derechos reservados.
+        </div>
+      `;
+
+      document.body.appendChild(reportContainer);
+
+      // Esperar un breve momento para que los gráficos se rendericen
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const canvas = await html2canvas(reportContainer, {
+        scale: 2,
+        logging: true,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        format: "a4",
+        unit: "mm",
+      });
+
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(
+        `Reporte_Historico_Crecimiento_${
+          new Date().toISOString().split("T")[0]
+        }.pdf`
+      );
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      // Limpiar de manera segura
+      const containerToRemove = document.querySelector(
+        'div[style*="left: -9999px"]'
+      );
+      if (containerToRemove && containerToRemove.parentNode) {
+        containerToRemove.parentNode.removeChild(containerToRemove);
+      }
+    }
+  };
+
   return (
-    <div className="flex w-full h-full bg-white rounded-xl shadow mt-4 border relative">
+    <div
+      id="historico-crecimiento-report"
+      className="flex w-full h-full bg-white shadow mt-4 relative"
+    >
       {/* Botón de cerrar */}
       <Button
         variant="ghost"
@@ -351,7 +563,7 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
       </div>
 
       {/* Gráfica principal */}
-      <div className="flex flex-col w-3/5 p-4">
+      <div className="flex flex-col w-full p-4">
         <div className="h-10 mb-2 flex items-center justify-center">
           <h2 className="text-xl font-bold">
             {selectedGraph === "historico_crecimiento" &&
@@ -385,12 +597,12 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
             <div>
               <h4 className="text-sm font-medium">Total de datos</h4>
               <p className="text-2xl font-bold">
-                {(filteredData.length > 0
-                  ? filteredData
-                  : graphData?.transformedData || []
-                )
-                  .reduce((sum, item) => sum + (item.desktop || 0), 0)
-                  .toLocaleString()}
+                {formatBytes(
+                  (filteredData.length > 0
+                    ? filteredData
+                    : graphData?.transformedData || []
+                  ).reduce((sum, item) => sum + (item.tráfico || 0), 0)
+                )}
               </p>
               {selectedIP !== "all" && (
                 <p className="text-xs text-muted-foreground">
@@ -426,6 +638,20 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
                   : graphData?.transformedData?.length || 0}
               </p>
             </div>
+            {!loading &&
+              !error &&
+              (filteredData.length > 0 ||
+                graphData?.transformedData?.length > 0) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full cursor-pointer hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                  onClick={handleDownloadReport}
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Descargar Reporte
+                </Button>
+              )}
           </div>
         )}
       </div>
