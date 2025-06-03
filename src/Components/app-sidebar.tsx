@@ -60,11 +60,6 @@ const items_home = [
     icon: ChartNoAxesCombinedIcon,
   },
   {
-    title: "Trafico de red",
-    url: "#trafico_red",
-    icon: ArrowDownUpIcon,
-  },
-  {
     title: "Fallas",
     url: "#fallas",
     icon: BanIcon,
