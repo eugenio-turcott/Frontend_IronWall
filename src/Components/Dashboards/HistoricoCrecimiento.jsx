@@ -23,6 +23,64 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+const ipMap = {
+  "172.30.246.": "172.30.246.254",
+  "172.19.255": "172.19.255.23",
+  "172.31.14": "172.31.141.1",
+  "10.61.5": "10.61.50.1",
+  "172.31.11": "172.31.113.1",
+  "172.19.25": "172.19.255.6",
+  "172.19.3": "172.19.30.1",
+  "172.19.6": "172.19.65.1",
+  "172.21.25": "172.21.255.6",
+  "172.31.243": "172.31.243.10",
+  "172.31.5": "172.31.53.1",
+  "172.28.": "172.28.0.1",
+  "172.22.1": "172.22.16.1",
+  "172.24.1": "172.24.13.1",
+  "172.31.1.": "172.31.1.100",
+  "10.2.0.": "10.2.0.254",
+  "10.1.": "10.1.5.1",
+  "172.31.10": "172.31.10.1",
+  "172.31.12": "172.31.120.1",
+  "172.31.17": "172.31.175.1",
+  "172.31.16": "172.31.160.1",
+  "172.31.21": "172.31.218.1",
+  "172.31.7": "172.31.72.1",
+  "172.24.": "172.24.0.1",
+  "172.31.33": "172.31.33.52",
+  "172.31.3": "172.31.35.1",
+  "172.30.31.": "172.30.31.254",
+  "172.255.255": "172.255.255.99",
+  "172.31.8": "172.31.86.1",
+  "172.21.28": "172.21.28.10",
+  "10.20.": "10.20.0.1",
+  "172.31.": "172.31.2.1",
+  "172.31.241": "172.31.241.10",
+  "172.30.220.": "172.30.220.254",
+  "172.31.22": "172.31.220.1",
+  "172.30.27.": "172.30.27.254",
+  "172.31.4": "172.31.45.1",
+  "172.30.89.": "172.30.89.246",
+  "172.31.1": "172.31.1.68",
+  "10.40.10": "10.40.10.1",
+  "10.20.1": "10.20.11.1",
+  "172.31.127": "172.31.127.1",
+};
+
+function mapIncompleteIPsToFull(incompleteIPs) {
+  return incompleteIPs
+    .map(ip => ip.trim())
+    .filter(ip => ip !== "")
+    .map(ip => {
+      const match = Object.keys(ipMap).find(prefix => ip.startsWith(prefix));
+      if (match) return ipMap[match];
+      console.warn(`NO_MATCH:${ip}`);
+      return `NO_MATCH:${ip}`;
+    });
+}
+
+
 export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
   const [dateRange, setDateRange] = useState([
     { startDate: new Date(), endDate: new Date(), key: "selection" },
@@ -90,7 +148,23 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
 
     const startDate = new Date(apiData.meta.start * 1000);
     const step = apiData.meta.step;
-    const ips = apiData.meta.legend || [];
+    const old_ips = apiData.meta.legend || [];
+
+    let ips = mapIncompleteIPsToFull(old_ips)
+
+    const deviceIdPromises = ips
+    .filter(ip => !ip.startsWith("NO_MATCH:"))
+    .map(async ip => {
+      try {
+        const res = await fetch(`/api/devices?ip=${encodeURIComponent(ip)}`);
+        const data = await res.json();
+        return { ip, deviceId: data.deviceId };
+      } catch {
+        return { ip, deviceId: null, error: true };
+      }
+    });
+    const deviceIds = await Promise.all(deviceIdPromises);
+
 
     // Guardar las IPs disponibles
     setAvailableIPs(ips.filter((ip) => ip && ip.trim() !== ""));
