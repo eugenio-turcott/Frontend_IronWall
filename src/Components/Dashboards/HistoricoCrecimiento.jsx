@@ -36,48 +36,58 @@ const CustomTickY = ({ x, y, payload }) => {
 };
 
 const ipMap = {
-  "172.30.246.": "172.30.246.254",
-  "172.19.255": "172.19.255.23",
-  "172.31.14": "172.31.141.1",
-  "10.61.5": "10.61.50.1",
-  "172.31.11": "172.31.113.1",
-  "172.19.25": "172.19.255.6",
-  "172.19.3": "172.19.30.1",
-  "172.19.6": "172.19.65.1",
-  "172.21.25": "172.21.255.6",
-  "172.31.243": "172.31.243.10",
-  "172.31.5": "172.31.53.1",
-  "172.28.": "172.28.0.1",
-  "172.22.1": "172.22.16.1",
-  "172.24.1": "172.24.13.1",
-  "172.31.1.": "172.31.1.100",
-  "10.2.0.": "10.2.0.254",
-  "10.1.": "10.1.5.1",
-  "172.31.10": "172.31.10.1",
-  "172.31.12": "172.31.120.1",
-  "172.31.17": "172.31.175.1",
-  "172.31.16": "172.31.160.1",
-  "172.31.21": "172.31.218.1",
-  "172.31.7": "172.31.72.1",
-  "172.24.": "172.24.0.1",
-  "172.31.33": "172.31.33.52",
-  "172.31.3": "172.31.35.1",
-  "172.30.31.": "172.30.31.254",
-  "172.255.255": "172.255.255.99",
-  "172.31.8": "172.31.86.1",
-  "172.21.28": "172.21.28.10",
-  "10.20.": "10.20.0.1",
-  "172.31.": "172.31.2.1",
-  "172.31.241": "172.31.241.10",
-  "172.30.220.": "172.30.220.254",
-  "172.31.22": "172.31.220.1",
-  "172.30.27.": "172.30.27.254",
-  "172.31.4": "172.31.45.1",
-  "172.30.89.": "172.30.89.246",
-  "172.31.1": "172.31.1.68",
-  "10.40.10": "10.40.10.1",
-  "10.20.1": "10.20.11.1",
-  "172.31.127": "172.31.127.1",
+  "172.30.246.": "core-antigua_estanzuela",
+  "172.19.255": "core-acherbis",
+  "172.31.14": "core-juarez",
+  "10.61.5": "core-cuautitlan-cdmx",
+  "172.31.11": "core-vasconcelos",
+  "172.19.25": "core-acherbis",
+  "172.19.3": "core-acherbis",
+  "172.19.6": "core-ramazini",
+  "172.21.25": "core-border_twinmex-ii-reynosa",
+  "172.31.243": "core-monterrey_ii",
+  "172.31.11": "core-pda",
+  "172.31.5": "core-kristales",
+  "172.28.": "core-coyotepec",
+  "172.22.1": "core-centinela",
+  "172.24.1": "core-colorado",
+  "172.31.1.": "core-estanzuela",
+  "10.2.0.": "core-floresta",
+  "10.1.": "core-grupo_sol",
+  "172.31.1": "core-loma_larga",
+  "172.31.12": "core-lomita",
+  "10.20.1": "core-morelos",
+  "172.31.1": "core-nimiw",
+  "172.31.17": "core_172.31.175.1",
+  "172.31.16": "core-hualahuises",
+  "172.31.21": "core-pesqueria-lee",
+  "10.2.0": "switch_crs326_grupo_sol",
+  "172.31.7": "core-capitolio",
+  "172.31.7": "core-rojas",
+  "172.24.1": "core-bandera",
+  "172.24.": "core-border_queretaro_san_pablo",
+  "172.24.1": "core_ccr1036_tec100",
+  "172.31.12": "core-sta_catarina",
+  "172.31.6": "core-repetec",
+  "172.31.33": "core-rb_hidalgo",
+  "172.31.3": "core-pueblo_serena",
+  "172.30.31.": "rep-guadalupe_ii_silva",
+  "172.255.255": "rep-guadalupe_ii_silva",
+  "172.31.8": "core-garcia",
+  "172.21.25": "core-rio_bravo",
+  "172.21.28": "core-172.21.28.10",
+  "10.20.": "core-10.20.0.1",
+  "172.31.": "core-cadereyta",
+  "172.31.": "core-172.31.8.1",
+  "172.31.241": "core_switch_crs317_purisima",
+  "172.31.11": "core-sendero",
+  "172.30.220.": "core-santa_rosa-b",
+  "172.31.22": "core-santa_rosa-b",
+  "172.30.27.": "core-pabellon_m",
+  "172.31.8": "core-fo_ccr1072_guadalupe",
+  "172.31.4": "core-pueblo_nvo",
+  "172.30.89.": "core_switch_mitras_ccr2004",
+  "172.31.1": "core-santa_isabel",
 };
 
 export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
@@ -98,7 +108,7 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
     const fetchGraphData = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:8000/graphs");
+        const response = await fetch("http://localhost:8000/graphs_db");
         if (!response.ok) throw new Error("Error al obtener los datos");
         const data = await response.json();
 
@@ -153,19 +163,22 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
     const mapIPs = (ipList) => {
       return ipList.map((ip) => {
         if (!ip) return ip;
-
-        // Buscar coincidencias parciales en las claves de ipMap
         const matchedKey = Object.keys(ipMap).find((key) => ip.startsWith(key));
-
-        // Si encontramos una coincidencia, devolvemos el valor mapeado
-        // Si no, devolvemos la IP original
         return matchedKey ? ipMap[matchedKey] : ip;
       });
     };
 
     // Mapear las IPs (primera mitad del array)
-    const mappedIPs = mapIPs(ips.slice(0, Math.ceil(ips.length / 2)));
-    setAvailableIPs(mappedIPs.filter((ip) => ip && ip.trim() !== ""));
+    const mappedIPs = [
+      ...new Set(
+        mapIPs(
+          ips
+            .slice(0, Math.ceil(ips.length / 2))
+            .filter((ip) => ip && ip.trim() !== "")
+        )
+      ),
+    ];
+    setAvailableIPs(mappedIPs);
 
     return apiData.data
       .map((item, index) => {
@@ -394,7 +407,7 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
             </h1>
             <p style="color: #718096; font-size: 20px; margin: 2px 0 0;">
               Este gráfico muestra el crecimiento histórico de los datos
-              de la dirección IP seleccionada en el rango de fechas especificado.
+              del nodo seleccionado en el rango de fechas especificado.
             </p>
           </div>
         </div>
@@ -403,7 +416,7 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
           <strong>Filtros aplicados:</strong><br/>
           Año: ${selectedYear === "all" ? "Todos" : selectedYear}<br/>
           Rango de fechas: ${dateRange[0].startDate.toLocaleDateString()} - ${dateRange[0].endDate.toLocaleDateString()}<br/>
-          IP: ${selectedIP === "all" ? "Todas" : selectedIP}
+          Nodo: ${selectedIP === "all" ? "Todos los nodos" : selectedIP}
         </div>
 
         <div style="height: 375px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px; margin-bottom: 10px;">
@@ -539,17 +552,17 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
           )}
         </div>
 
-        {/* Selector de rango de IPs */}
+        {/* Selector de rango de Nodos */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">Dirección IP</label>
+          <label className="text-sm font-medium">Nodo</label>
           <Select onValueChange={setSelectedIP} value={selectedIP}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Seleccionar IP" />
+              <SelectValue placeholder="Seleccionar Nodo" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>IPs disponibles</SelectLabel>
-                <SelectItem value="all">Todas las IPs</SelectItem>
+                <SelectLabel>Nodos disponibles</SelectLabel>
+                <SelectItem value="all">Todos los Nodos</SelectItem>
                 {availableIPs.map((ip, i) => (
                   <SelectItem key={`${ip}+${i}`} value={ip}>
                     {ip}
@@ -625,7 +638,7 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
           <h2 className="text-xl font-bold">
             {selectedGraph === "historico_crecimiento" &&
               "Histórico de Crecimiento"}
-            {selectedIP !== "all" && ` (IP: ${selectedIP})`}
+            {selectedIP !== "all" && ` (Nodo: ${selectedIP})`}
           </h2>
         </div>
         <div className="flex-1">
@@ -663,7 +676,7 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
               </p>
               {selectedIP !== "all" && (
                 <p className="text-xs text-muted-foreground">
-                  Filtrado por IP: {selectedIP}
+                  Filtrado por Nodo: {selectedIP}
                 </p>
               )}
             </div>
@@ -698,7 +711,8 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
             {!loading &&
               !error &&
               (filteredData.length > 0 ||
-                graphData?.transformedData?.length > 0) && (
+                graphData?.transformedData?.length > 0) &&
+              sessionStorage.getItem("userType") === "administrador" && (
                 <Button
                   variant="ghost"
                   size="sm"
