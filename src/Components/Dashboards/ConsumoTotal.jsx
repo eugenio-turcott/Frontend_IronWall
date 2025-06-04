@@ -2,11 +2,8 @@ import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  PieChart,
+  Pie,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
@@ -42,15 +39,12 @@ export default function ConsumoTotal({ selectedGraph, onClose }) {
 
   if (selectedGraph !== "consumo_total") return null;
 
-  // Preparar datos para AreaChart
-  const chartData = consumoData
+  // Preparar datos para PieChart
+  const pieChartData = consumoData
     ? [
-        {
-          name: "Consumo Total (GB)",
-          Entrada: consumoData.total_in_gb,
-          Salida: consumoData.total_out_gb,
-          Combinado: consumoData.total_combined_gb,
-        },
+        { name: "Entrada (GB)", value: consumoData.total_in_gb },
+        { name: "Salida (GB)", value: consumoData.total_out_gb },
+        { name: "Combinado (GB)", value: consumoData.total_combined_gb },
       ]
     : [];
 
@@ -99,36 +93,18 @@ export default function ConsumoTotal({ selectedGraph, onClose }) {
             <div className="text-red-500">{error}</div>
           ) : consumoData ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={chartData}
-                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip formatter={(value) => `${value?.toLocaleString()} GB`} />
-                <Area
-                  type="monotone"
-                  dataKey="Entrada"
-                  stackId="1"
-                  stroke="#8884d8"
+              <PieChart>
+                <Pie
+                  dataKey="value"
+                  data={pieChartData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
                   fill="#8884d8"
+                  label
                 />
-                <Area
-                  type="monotone"
-                  dataKey="Salida"
-                  stackId="1"
-                  stroke="#82ca9d"
-                  fill="#82ca9d"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="Combinado"
-                  stackId="1"
-                  stroke="#ffc658"
-                  fill="#ffc658"
-                />
-              </AreaChart>
+                <Tooltip formatter={(value) => `${value?.toLocaleString()} GB`} />
+              </PieChart>
             </ResponsiveContainer>
           ) : (
             <div className="text-gray-500">No hay datos disponibles</div>
