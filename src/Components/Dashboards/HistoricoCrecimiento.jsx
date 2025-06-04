@@ -109,7 +109,7 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
       try {
         setLoading(true);
         const response = await fetch(
-          "http://ec2-44-202-12-128.compute-1.amazonaws.com/graphs_db"
+          "http://ec2-54-159-226-76.compute-1.amazonaws.com/graphs_db"
         );
         if (!response.ok) throw new Error("Error al obtener los datos");
         const data = await response.json();

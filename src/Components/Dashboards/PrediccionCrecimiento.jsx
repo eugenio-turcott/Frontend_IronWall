@@ -113,7 +113,7 @@ export default function PrediccionCrecimiento({ selectedGraph, onClose }) {
         setLoading(true);
         // Obtener datos históricos
         const historicalResponse = await fetch(
-          "http://ec2-44-202-12-128.compute-1.amazonaws.com/graphs_db"
+          "http://ec2-54-159-226-76.compute-1.amazonaws.com/graphs_db"
         );
         if (!historicalResponse.ok)
           throw new Error("Error al obtener los datos históricos");
@@ -121,7 +121,7 @@ export default function PrediccionCrecimiento({ selectedGraph, onClose }) {
 
         // Obtener datos de predicción
         const predictionResponse = await fetch(
-          "http://ec2-44-202-12-128.compute-1.amazonaws.com/graphs_prediction_db"
+          "http://ec2-54-159-226-76.compute-1.amazonaws.com/graphs_prediction_db"
         );
         if (!predictionResponse.ok)
           throw new Error("Error al obtener los datos de predicción");

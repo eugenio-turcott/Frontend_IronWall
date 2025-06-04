@@ -17,8 +17,8 @@ export default function ConsumoTotal({ selectedGraph, onClose }) {
       try {
         const endpoint =
           tipoConsumo === "externo"
-            ? "http://ec2-44-202-12-128.compute-1.amazonaws.com/ports/total-consumption-internet"
-            : "http://ec2-44-202-12-128.compute-1.amazonaws.com/ports/total-consumption-nonInternet";
+            ? "http://ec2-54-159-226-76.compute-1.amazonaws.com/ports/total-consumption-internet"
+            : "http://ec2-54-159-226-76.compute-1.amazonaws.com/ports/total-consumption-nonInternet";
         const response = await fetch(endpoint);
         const data = await response.json();
         setConsumoData(data);

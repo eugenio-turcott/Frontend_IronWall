@@ -21,7 +21,7 @@ export default function FallasTop({ selectedGraph, onClose }) {
       try {
         setLoading(true);
         const response = await fetch(
-          "http://ec2-44-202-12-128.compute-1.amazonaws.com/ports/failures"
+          "http://ec2-54-159-226-76.compute-1.amazonaws.com/ports/failures"
         );
         if (!response.ok) throw new Error("Error fetching failures data");
 

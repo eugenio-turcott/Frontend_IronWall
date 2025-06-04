@@ -57,7 +57,7 @@ function Login() {
 
     try {
       const response = await fetch(
-        "http://ec2-44-202-12-128.compute-1.amazonaws.com/login",
+        "http://ec2-54-159-226-76.compute-1.amazonaws.com/login",
         {
           method: "POST",
           headers: {

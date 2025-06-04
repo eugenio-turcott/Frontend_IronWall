@@ -41,7 +41,7 @@ export default function AlertList() {
     const fetchAlerts = async () => {
       try {
         const response = await fetch(
-          "http://ec2-44-202-12-128.compute-1.amazonaws.com/alerts_db"
+          "http://ec2-54-159-226-76.compute-1.amazonaws.com/alerts_db"
         );
         if (!response.ok) {
           throw new Error("Error al obtener las alertas");
@@ -188,7 +188,7 @@ export default function AlertList() {
 
     try {
       const response = await fetch(
-        `http://ec2-44-202-12-128.compute-1.amazonaws.com/alerts_db/${alertId}/complete`,
+        `http://ec2-54-159-226-76.compute-1.amazonaws.com/alerts_db/${alertId}/complete`,
         {
           method: "PUT",
           headers: {
@@ -226,7 +226,7 @@ export default function AlertList() {
   const confirmCompleteAlert = async () => {
     try {
       const response = await fetch(
-        `http://ec2-44-202-12-128.compute-1.amazonaws.com/alerts_db/${alertToComplete}/complete`,
+        `http://ec2-54-159-226-76.compute-1.amazonaws.com/alerts_db/${alertToComplete}/complete`,
         {
           method: "PUT",
           headers: {
@@ -252,7 +252,7 @@ export default function AlertList() {
   const handleNoCompleteAlert = async (alertId) => {
     try {
       const response = await fetch(
-        `http://ec2-44-202-12-128.compute-1.amazonaws.com/alerts_db/${alertId}/no_complete`,
+        `http://ec2-54-159-226-76.compute-1.amazonaws.com/alerts_db/${alertId}/no_complete`,
         {
           method: "PUT",
           headers: {
