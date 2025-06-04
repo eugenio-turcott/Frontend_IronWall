@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Calendar, Filter, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { DateRange } from "react-date-range";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
@@ -16,7 +16,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/Components/ui/select";
 import {
   LineChart,
   Line,
@@ -113,7 +113,7 @@ export default function PrediccionCrecimiento({ selectedGraph, onClose }) {
         setLoading(true);
         // Obtener datos históricos
         const historicalResponse = await fetch(
-          "http://localhost:8000/graphs_db"
+          "http://ec2-44-202-12-128.compute-1.amazonaws.com/graphs_db"
         );
         if (!historicalResponse.ok)
           throw new Error("Error al obtener los datos históricos");
@@ -121,7 +121,7 @@ export default function PrediccionCrecimiento({ selectedGraph, onClose }) {
 
         // Obtener datos de predicción
         const predictionResponse = await fetch(
-          "http://localhost:8000/graphs_prediction_db"
+          "http://ec2-44-202-12-128.compute-1.amazonaws.com/graphs_prediction_db"
         );
         if (!predictionResponse.ok)
           throw new Error("Error al obtener los datos de predicción");
@@ -345,7 +345,7 @@ export default function PrediccionCrecimiento({ selectedGraph, onClose }) {
       <ResponsiveContainer id="prediccion-crecimiento-grafica">
         <LineChart
           data={dataToUse}
-          margin={{ top: 10, right: 10, left: 30, bottom: 0 }}
+          margin={{ top: 20, right: 10, left: 30, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="month" tick={{ fontSize: 12 }} />

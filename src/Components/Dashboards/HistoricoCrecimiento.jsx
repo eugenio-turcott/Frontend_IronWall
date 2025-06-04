@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Calendar, Filter, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { DateRange } from "react-date-range";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
@@ -16,7 +16,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/Components/ui/select";
 import {
   AreaChart,
   Area,
@@ -108,7 +108,9 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
     const fetchGraphData = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:8000/graphs_db");
+        const response = await fetch(
+          "http://ec2-44-202-12-128.compute-1.amazonaws.com/graphs_db"
+        );
         if (!response.ok) throw new Error("Error al obtener los datos");
         const data = await response.json();
 
@@ -276,7 +278,7 @@ export default function HistoricoCrecimiento({ selectedGraph, onClose }) {
           <ResponsiveContainer id="historico-crecimiento-grafica">
             <AreaChart
               data={dataToUse}
-              margin={{ top: 10, right: 10, left: 30, bottom: 0 }}
+              margin={{ top: 20, right: 10, left: 30, bottom: 0 }}
             >
               <defs>
                 <linearGradient id="colorGrowthF" x1="0" y1="0" x2="0" y2="1">

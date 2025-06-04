@@ -10,14 +10,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/Components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import { Button } from "@/components/ui/button";
+} from "@/Components/ui/chart";
+import { Button } from "@/Components/ui/button";
 
 interface LineChartCardProps {
   title: string;

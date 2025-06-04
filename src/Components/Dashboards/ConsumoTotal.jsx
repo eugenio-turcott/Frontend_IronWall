@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  PieChart,
-  Pie,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { Button } from "@/Components/ui/button";
+import { PieChart, Pie, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function ConsumoTotal({ selectedGraph, onClose }) {
   const [tipoConsumo, setTipoConsumo] = useState("externo");
@@ -22,8 +17,8 @@ export default function ConsumoTotal({ selectedGraph, onClose }) {
       try {
         const endpoint =
           tipoConsumo === "externo"
-            ? "http://localhost:8000/ports/total-consumption-internet"
-            : "http://localhost:8000/ports/total-consumption-nonInternet";
+            ? "http://ec2-44-202-12-128.compute-1.amazonaws.com/ports/total-consumption-internet"
+            : "http://ec2-44-202-12-128.compute-1.amazonaws.com/ports/total-consumption-nonInternet";
         const response = await fetch(endpoint);
         const data = await response.json();
         setConsumoData(data);
@@ -103,7 +98,9 @@ export default function ConsumoTotal({ selectedGraph, onClose }) {
                   fill="#8884d8"
                   label
                 />
-                <Tooltip formatter={(value) => `${value?.toLocaleString()} GB`} />
+                <Tooltip
+                  formatter={(value) => `${value?.toLocaleString()} GB`}
+                />
               </PieChart>
             </ResponsiveContainer>
           ) : (

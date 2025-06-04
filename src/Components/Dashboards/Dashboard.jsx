@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   XAxis,
@@ -10,13 +8,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { AreaChart, Area } from "recharts";
-import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-} from "recharts";
 import { BarChart, Bar, Rectangle } from "recharts";
 import { LineChart, Line, ReferenceLine } from "recharts";
 import HistoricoCrecimiento from "./HistoricoCrecimiento";

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import {
   BarChart,
   Bar,
@@ -15,26 +15,28 @@ export default function FallasTop({ selectedGraph, onClose }) {
   const [failuresData, setFailuresData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  console.log(failuresData)
+  console.log(failuresData);
   useEffect(() => {
-  const fetchFailures = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("http://localhost:8000/ports/failures");
-      if (!response.ok) throw new Error("Error fetching failures data");
+    const fetchFailures = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "http://ec2-44-202-12-128.compute-1.amazonaws.com/ports/failures"
+        );
+        if (!response.ok) throw new Error("Error fetching failures data");
 
-      const data = await response.json();
-      setFailuresData(data);
-    //   console.log(failuresData)
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+        const data = await response.json();
+        setFailuresData(data);
+        //   console.log(failuresData)
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchFailures();
-}, [selectedGraph]);
+    fetchFailures();
+  }, [selectedGraph]);
 
   if (selectedGraph !== "fallas") return null;
 
@@ -53,7 +55,9 @@ export default function FallasTop({ selectedGraph, onClose }) {
         <h2 className="text-xl font-bold mb-4">Top 5 Fallas por Dispositivo</h2>
 
         {loading ? (
-          <div className="h-full flex items-center justify-center">Cargando datos...</div>
+          <div className="h-full flex items-center justify-center">
+            Cargando datos...
+          </div>
         ) : error ? (
           <div className="h-full flex items-center justify-center text-red-500">
             Error: {error}
@@ -70,18 +74,22 @@ export default function FallasTop({ selectedGraph, onClose }) {
               layout="vertical"
             >
               <CartesianGrid strokeDasharray="3 3" />
-   
-            <XAxis
-            type="number"
-            label={{ value: "Failures", position: "insideBottom", offset: -5 }}
-            tickFormatter={(value) => value.toLocaleString()}
-            />
-               <YAxis
-            dataKey="device"
-            type="category"
-            label={{ value: "Device", angle: -90, position: "insideLeft" }}
-            tick={{ fontSize: 12 }}
-            />
+
+              <XAxis
+                type="number"
+                label={{
+                  value: "Failures",
+                  position: "insideBottom",
+                  offset: -5,
+                }}
+                tickFormatter={(value) => value.toLocaleString()}
+              />
+              <YAxis
+                dataKey="device"
+                type="category"
+                label={{ value: "Device", angle: -90, position: "insideLeft" }}
+                tick={{ fontSize: 12 }}
+              />
 
               <Tooltip />
               <Bar dataKey="fail_count" fill="#ef4444" />
@@ -97,7 +105,9 @@ export default function FallasTop({ selectedGraph, onClose }) {
             <div>
               <h4 className="text-sm font-medium">Total fallas</h4>
               <p className="text-2xl font-bold">
-                {failuresData.reduce((sum, item) => sum + item.fail_count, 0).toLocaleString()}
+                {failuresData
+                  .reduce((sum, item) => sum + item.fail_count, 0)
+                  .toLocaleString()}
               </p>
             </div>
             <div>
@@ -108,11 +118,13 @@ export default function FallasTop({ selectedGraph, onClose }) {
               <h4 className="text-sm font-medium">Dispositivos listadas</h4>
               <ul className="list-disc list-inside text-sm mt-2 max-h-48 overflow-auto">
                 {failuresData.map((item) => (
-                    <div key={item.device}>
-                        {item.device}: {typeof item.fail_count === 'number' ? item.fail_count.toLocaleString() : '0'}
-                    </div>
-                    ))
-                    }
+                  <div key={item.device}>
+                    {item.device}:{" "}
+                    {typeof item.fail_count === "number"
+                      ? item.fail_count.toLocaleString()
+                      : "0"}
+                  </div>
+                ))}
               </ul>
             </div>
           </>

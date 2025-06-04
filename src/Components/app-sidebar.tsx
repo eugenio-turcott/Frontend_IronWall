@@ -39,8 +39,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/Components/ui/dropdown-menu";
+
+// @ts-ignore
 import logo from "../assets/xcien_logo.png";
+// @ts-ignore
 import logo_chico from "../assets/xcien_logo_c.png";
+// @ts-ignore
 import { useAuth } from "../hooks/useAuth";
 
 const items_home = [
