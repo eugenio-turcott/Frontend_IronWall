@@ -181,7 +181,7 @@ export default function Dashboard() {
         <div className="flex flex-row justify-around gap-6 mt-4 px-3 py-1">
           <div
             className={cn(
-              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[200px] h-[200px] cursor-pointer"
+              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[200px] h-[175px] cursor-pointer"
             )}
             onClick={() => handleGraphClick("consumo_total")}
           >
@@ -195,23 +195,11 @@ export default function Dashboard() {
                   <PieChartWithNeedle />
                 </div>
               </div>
-              {sessionStorage.getItem("userType") === "administrador" && (
-                <div className="z-20 mt-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-xs gap-1 cursor-pointer"
-                  >
-                    <Download className="w-3 h-3" />
-                    Descargar Reporte
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
           <div
             className={cn(
-              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[270px] h-[200px] cursor-pointer"
+              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[270px] h-[175px] cursor-pointer"
             )}
             onClick={() => handleGraphClick("historico_crecimiento")}
           >
@@ -266,23 +254,11 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
               </div>
-              {sessionStorage.getItem("userType") === "administrador" && (
-                <div className="z-20 mt-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-xs gap-1 cursor-pointer"
-                  >
-                    <Download className="w-3 h-3" />
-                    Descargar Reporte
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
           <div
             className={cn(
-              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[200px] h-[200px] cursor-pointer"
+              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[200px] h-[175px] cursor-pointer"
             )}
             onClick={() => handleGraphClick("fallas")}
           >
@@ -317,23 +293,11 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
               </div>
-              {sessionStorage.getItem("userType") === "administrador" && (
-                <div className="z-20 mt-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-xs gap-1 cursor-pointer"
-                  >
-                    <Download className="w-3 h-3" />
-                    Descargar Reporte
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
           <div
             className={cn(
-              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[270px] h-[200px] cursor-pointer"
+              "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm w-[270px] h-[175px] cursor-pointer"
             )}
             onClick={() => handleGraphClick("prediccion_crecimiento")}
           >
@@ -364,18 +328,6 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
               </div>
-              {sessionStorage.getItem("userType") === "administrador" && (
-                <div className="z-20 mt-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-xs gap-1 cursor-pointer"
-                  >
-                    <Download className="w-3 h-3" />
-                    Descargar Reporte
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -406,7 +358,6 @@ export default function Dashboard() {
               sessionStorage.setItem("Panel", "");
             }}
           />
-
         ) : selectedGraph === "consumo_total" ? (
           <ConsumoTotal
             selectedGraph={selectedGraph}
@@ -416,7 +367,6 @@ export default function Dashboard() {
               sessionStorage.setItem("activeSidebarItem", "Panel");
             }}
           />
-
         ) : selectedGraph ? (
           <div className="w-full h-full flex items-center justify-center text-gray-400 mt-4 border-2">
             Componente para {selectedGraph} no implementado aún.
