@@ -413,13 +413,6 @@ export default function AlertList() {
                 ))}
               </div>
             </div>
-            {sessionStorage.getItem("userType") === "administrador" && (
-              <div className="w-full max-w-6xl flex justify-end pt-8 pb-2 pr-8">
-                <button className="flex items-center gap-2 border rounded-lg px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium shadow-sm hover:shadow-md cursor-pointer">
-                  <Download className="w-4 h-4" /> Descargar Reporte
-                </button>
-              </div>
-            )}
           </div>
           {/* Columna derecha: detalles de alerta seleccionada */}
           {selectedAlert && (
