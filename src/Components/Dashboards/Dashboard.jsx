@@ -12,9 +12,10 @@ import { BarChart, Bar, Rectangle } from "recharts";
 import { LineChart, Line, ReferenceLine } from "recharts";
 import HistoricoCrecimiento from "./HistoricoCrecimiento";
 import PrediccionCrecimiento from "./PrediccionCrecimiento";
-import PieChartWithNeedle from "../ui/PieChartWithNeedle";
+import MiniConsumoPieChart from "../ui/MiniConsumoPieChart";
 import FallasTop from "./Fallas";
 import ConsumoTotal from "./ConsumoTotal";
+import MiniFallasBarChart from "../ui/MiniFallasBarChart";
 
 const data = [
   { name: "A", value: 80, color: "#ff0000" },
@@ -183,7 +184,7 @@ export default function Dashboard() {
               </div>
               <div className="z-10 h-[80px]">
                 <div className="z-10 flex justify-center">
-                  <PieChartWithNeedle />
+                  <MiniConsumoPieChart />
                 </div>
               </div>
             </div>
@@ -263,25 +264,7 @@ export default function Dashboard() {
                 onClick={() => handleGraphClick("fallas")}
               >
                 <div className="z-10 flex justify-center">
-                  <ResponsiveContainer width="100%" height={80}>
-                    <BarChart
-                      width={500}
-                      height={300}
-                      data={data4}
-                      margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar
-                        dataKey="uv"
-                        fill="#82ca9d"
-                        activeBar={<Rectangle fill="gold" stroke="purple" />}
-                        className="cursor-pointer"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <MiniFallasBarChart width={"100%"} height={100} />
                 </div>
               </div>
             </div>
