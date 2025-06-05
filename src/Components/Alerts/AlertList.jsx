@@ -392,7 +392,7 @@ export default function AlertList() {
                 <MapPinned className="w-4 h-4 inline-block mr-1" />
                 <span className="font-medium text-sm mt-2">Región</span>
               </div>
-              <div className="overflow-y-auto flex-1 flex flex-col gap-3 pr-1 max-h-20">
+              <div className="overflow-y-auto flex-1 flex flex-col gap-3 pr-1 max-h-40">
                 {regiones.map((r) => (
                   <button
                     key={r}

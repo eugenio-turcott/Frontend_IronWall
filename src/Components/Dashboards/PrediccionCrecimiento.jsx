@@ -762,8 +762,7 @@ export default function PrediccionCrecimiento({ selectedGraph, onClose }) {
             {!loading &&
               !error &&
               (filteredData.length > 0 ||
-                graphData?.transformedData?.length > 0) &&
-              sessionStorage.getItem("userType") === "administrador" && (
+                graphData?.transformedData?.length > 0) && (
                 <Button
                   variant="ghost"
                   size="sm"
