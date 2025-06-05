@@ -1,9 +1,7 @@
 import React from "react";
 import { BarChart, Bar, ResponsiveContainer, CartesianGrid, XAxis, YAxis } from "recharts";
 
-// Mini bar chart for dashboard card (static demo values, can be replaced with props if needed)
 export default function MiniFallasBarChart({ width = 100, height = 60, data }) {
-  // If no data is passed, use demo values
   const chartData = data || [
     { device: "A", fail_count: 5 },
     { device: "B", fail_count: 3 },

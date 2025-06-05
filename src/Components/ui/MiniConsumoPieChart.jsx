@@ -3,9 +3,7 @@ import { PieChart, Pie, Cell } from "recharts";
 
 const pieColors = ["#4f46e5", "#22c55e", "#f59e42"];
 
-// Mini PieChart for dashboard card (static demo values, can be replaced with props if needed)
 export default function MiniConsumoPieChart({ width = 100, height = 80, data }) {
-  // If no data is passed, use demo values
   const pieChartData = data || [
     { name: "Entrada", value: 4000 },
     { name: "Salida", value: 2000 },
